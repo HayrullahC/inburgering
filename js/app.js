@@ -83,7 +83,23 @@ function openS(id){
     document.getElementById("speaking-list").classList.remove("hidden");
     if (window._currentRec) { try { window._currentRec.stop(); } catch(e){} }
   };
-  document.getElementById("he").onclick = () => speakDutch(p.example);
+  
+document.getElementById("he").onclick = () => {
+  // show example below
+  let exBox = document.getElementById("example-box");
+  if (!exBox) {
+    exBox = document.createElement("div");
+    exBox.id = "example-box";
+    exBox.className = "model-answer";
+    exBox.style.marginTop = "12px";
+    document.getElementById("st").parentNode.appendChild(exBox);
+  }
+  exBox.innerHTML = "<strong>Voorbeeldantwoord:</strong><br><br>" + p.example;
+  exBox.style.display = "block";
+  // also speak it
+  speakDutch(p.example);
+};
+
 
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   let rec = null;
@@ -210,5 +226,91 @@ renderP();
 
 // MOCK
 document.querySelectorAll(".mock-start").forEach(b=>b.onclick=()=>{const area=document.getElementById("mock-area");area.classList.remove("hidden");let qs=[...KNM_QUESTIONS].sort(()=>Math.random()-0.5).slice(0,10);let i=0,sc=0;function sh(){if(i>=qs.length){const p=Math.round(sc/qs.length*100);area.innerHTML='<div class="card"><h2>Finished</h2><div class="big-score" style="font-size:32px;color:var(--primary)">'+p+'%</div><button class="btn primary" onclick="location.reload()">Back</button></div>';markStudied();return}const q=qs[i];let o="";q.options.forEach((x,j)=>o+='<div class="option" data-j="'+j+'">'+x+'</div>');area.innerHTML='<div class="quiz-question"><p>Q '+(i+1)+'/'+qs.length+'</p><h3>'+q.q+'</h3><div class="options">'+o+'</div><button class="btn primary" id="mn" disabled>Next</button></div>';let a=false;area.querySelectorAll(".option").forEach(op=>op.onclick=()=>{if(a)return;a=true;const j=+op.dataset.j;area.querySelectorAll(".option").forEach(x=>{if(+x.dataset.j===q.correct)x.classList.add("correct")});if(j===q.correct){op.classList.add("correct");sc++}else op.classList.add("wrong");document.getElementById("mn").disabled=false});document.getElementById("mn").onclick=()=>{i++;sh()}}sh()});
+
+
+// ========== VOCAB GAME ==========
+let gameList = [], gameIdx = 0, gameScore = 0, gameMode = "nl2en";
+
+document.getElementById("start-game")?.addEventListener("click", startVocabGame);
+
+function startVocabGame() {
+  gameMode = document.getElementById("game-mode").value;
+  const cat = document.getElementById("game-cat").value;
+  let pool = VOCAB.filter(w => cat === "all" || w.cat === cat);
+  // shuffle
+  pool = pool.sort(() => Math.random() - 0.5).slice(0, 15);
+  if (pool.length < 4) { alert("Bu kategoride yeterli kelime yok"); return; }
+  gameList = pool;
+  gameIdx = 0;
+  gameScore = 0;
+  document.getElementById("game-area").classList.remove("hidden");
+  document.getElementById("game-result").classList.add("hidden");
+  showGameCard();
+  markStudied();
+}
+
+function showGameCard() {
+  if (gameIdx >= gameList.length) {
+    const pct = Math.round(gameScore / gameList.length * 100);
+    document.getElementById("game-card").innerHTML = "";
+    document.getElementById("game-result").classList.remove("hidden");
+    document.getElementById("game-result").innerHTML = 
+      '<div class="score-box"><div class="big-score">' + pct + '%</div>' +
+      '<p>' + gameScore + ' / ' + gameList.length + ' doğru</p>' +
+      '<button class="btn primary" onclick="document.getElementById(\'start-game\').click()">Tekrar oyna</button></div>';
+    document.getElementById("game-counter").textContent = "";
+    document.getElementById("game-progress").style.width = "100%";
+    return;
+  }
+
+  const w = gameList[gameIdx];
+  const emoji = w.emoji || "📝";
+  document.getElementById("game-emoji").textContent = emoji;
+  document.getElementById("game-progress").style.width = (gameIdx / gameList.length * 100) + "%";
+  document.getElementById("game-counter").textContent = (gameIdx + 1) + " / " + gameList.length;
+
+  let question, correct, options;
+  if (gameMode === "nl2en") {
+    question = w.nl;
+    correct = w.en;
+    // 3 wrong English
+    const wrongs = VOCAB.filter(x => x.en !== w.en).sort(() => Math.random() - 0.5).slice(0, 3).map(x => x.en);
+    options = [correct, ...wrongs].sort(() => Math.random() - 0.5);
+    document.getElementById("game-hint").textContent = "Wat betekent dit woord?";
+  } else {
+    question = w.en;
+    correct = w.nl;
+    const wrongs = VOCAB.filter(x => x.nl !== w.nl).sort(() => Math.random() - 0.5).slice(0, 3).map(x => x.nl);
+    options = [correct, ...wrongs].sort(() => Math.random() - 0.5);
+    document.getElementById("game-hint").textContent = "Hoe zeg je dit in het Nederlands?";
+  }
+
+  document.getElementById("game-question").textContent = question;
+  const optsDiv = document.getElementById("game-options");
+  optsDiv.innerHTML = options.map(o => '<div class="option" data-val="' + o.replace(/"/g, '&quot;') + '">' + o + '</div>').join("");
+
+  let answered = false;
+  optsDiv.querySelectorAll(".option").forEach(opt => {
+    opt.onclick = () => {
+      if (answered) return;
+      answered = true;
+      const val = opt.dataset.val;
+      optsDiv.querySelectorAll(".option").forEach(o => {
+        if (o.dataset.val === correct) o.classList.add("correct");
+      });
+      if (val === correct) {
+        opt.classList.add("correct");
+        gameScore++;
+      } else {
+        opt.classList.add("wrong");
+      }
+      // show example briefly
+      setTimeout(() => {
+        gameIdx++;
+        showGameCard();
+      }, 900);
+    };
+  });
+}
 
 console.log("Expanded trainer ready – 20+ per section + ONA exempt");

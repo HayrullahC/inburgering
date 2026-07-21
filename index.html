@@ -14,6 +14,7 @@
         <button class="nav-btn active" data-section="dashboard">📊 Dashboard</button>
         <button class="nav-btn" data-section="path">🛤️ Path</button>
         <button class="nav-btn" data-section="vocab">📚 Vocabulary</button>
+        <button class="nav-btn" data-section="vocabgame">🎯 Kelime Oyunu</button>
         <button class="nav-btn" data-section="grammar">📝 Grammar</button>
         <button class="nav-btn" data-section="listening">🎧 Listening</button>
         <button class="nav-btn" data-section="reading">📖 Reading</button>
@@ -46,7 +47,40 @@
           <a href="https://www.inburgeren.nl/en/taking-the-integration-exam/practicing.jsp" target="_blank" class="btn primary">Resmi practice →</a></div>
       </section>
       <section id="path" class="section"><h1>🛤️ A2 Path</h1><p class="subtitle">12 modül – sırayla tamamla</p><div id="path-modules" class="lesson-list"></div><div id="path-detail" class="hidden"></div></section>
-      <section id="vocab" class="section"><h1>📚 Vocabulary (120+)</h1><div class="controls"><select id="vocab-category"><option value="all">All</option><option value="daily">Daily</option><option value="work">Work</option><option value="health">Health</option><option value="housing">Housing</option><option value="government">Government</option><option value="education">Education</option></select><button id="start-vocab" class="btn primary">Start (15)</button><button id="vocab-list-btn" class="btn">All words</button></div><div id="vocab-session" class="hidden"><div class="progress-bar"><div id="vocab-progress"></div></div><div class="flashcard" id="flashcard"><div class="card-front"><div class="word" id="vocab-word"></div><div class="hint" id="vocab-hint"></div></div><div class="card-back hidden"><div class="translation" id="vocab-translation"></div><div class="example" id="vocab-example"></div></div></div><div class="flash-actions"><button id="show-answer" class="btn">Show</button><button id="know-btn" class="btn success hidden">I know ✓</button><button id="again-btn" class="btn danger hidden">Again</button></div><p id="vocab-counter"></p></div><div id="vocab-list-view" class="hidden"><button id="back-to-vocab" class="btn">← Back</button><div id="vocab-table"></div></div></section>
+      <section id="vocab" class="section"><h1>📚 Vocabulary (600+)</h1><div class="controls"><select id="vocab-category"><option value="all">All</option><option value="daily">Daily</option><option value="work">Work</option><option value="health">Health</option><option value="housing">Housing</option><option value="government">Government</option><option value="education">Education</option></select><button id="start-vocab" class="btn primary">Start (15)</button><button id="vocab-list-btn" class="btn">All words</button></div><div id="vocab-session" class="hidden"><div class="progress-bar"><div id="vocab-progress"></div></div><div class="flashcard" id="flashcard"><div class="card-front"><div class="word" id="vocab-word"></div><div class="hint" id="vocab-hint"></div></div><div class="card-back hidden"><div class="translation" id="vocab-translation"></div><div class="example" id="vocab-example"></div></div></div><div class="flash-actions"><button id="show-answer" class="btn">Show</button><button id="know-btn" class="btn success hidden">I know ✓</button><button id="again-btn" class="btn danger hidden">Again</button></div><p id="vocab-counter"></p></div><div id="vocab-list-view" class="hidden"><button id="back-to-vocab" class="btn">← Back</button><div id="vocab-table"></div></div></section>
+      
+      <section id="vocabgame" class="section">
+        <h1>🎯 Kelime Oyunu</h1>
+        <p class="subtitle">Foto + 4 şık. NL→EN veya EN→NL. Basit ve eğlenceli.</p>
+        <div class="controls">
+          <select id="game-mode">
+            <option value="nl2en">Nederlands → English</option>
+            <option value="en2nl">English → Nederlands</option>
+          </select>
+          <select id="game-cat">
+            <option value="all">Tüm kategoriler</option>
+            <option value="daily">Daily</option>
+            <option value="work">Work</option>
+            <option value="health">Health</option>
+            <option value="housing">Housing</option>
+            <option value="government">Government</option>
+            <option value="education">Education</option>
+          </select>
+          <button id="start-game" class="btn primary">Oyunu Başlat</button>
+        </div>
+        <div id="game-area" class="hidden">
+          <div class="progress-bar"><div id="game-progress"></div></div>
+          <div id="game-card" class="card" style="text-align:center;padding:30px 20px;">
+            <div id="game-emoji" style="font-size:64px;margin-bottom:12px;">📝</div>
+            <div id="game-question" style="font-size:28px;font-weight:700;color:var(--secondary);margin-bottom:8px;"></div>
+            <div id="game-hint" style="color:var(--muted);font-size:14px;margin-bottom:20px;"></div>
+            <div id="game-options" class="options" style="max-width:400px;margin:0 auto;"></div>
+          </div>
+          <p id="game-counter" style="text-align:center;color:var(--muted);"></p>
+          <div id="game-result" class="hidden" style="text-align:center;margin-top:16px;"></div>
+        </div>
+      </section>
+
       <section id="grammar" class="section"><h1>📝 Grammar (20 lessons)</h1><div id="grammar-list" class="lesson-list"></div><div id="grammar-detail" class="hidden"></div></section>
       <section id="listening" class="section"><h1>🎧 Listening (20)</h1><p class="subtitle">TTS ile dinle → soruları cevapla</p><div class="card info">Chrome/Edge önerilir. Play butonuna bas.</div><div id="listening-list" class="lesson-list"></div><div id="listening-detail" class="hidden"></div></section>
       <section id="reading" class="section"><h1>📖 Reading (20)</h1><div id="reading-list" class="lesson-list"></div><div id="reading-detail" class="hidden"></div></section>
