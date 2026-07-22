@@ -678,6 +678,16 @@ export function ResetPassword() {
   const nav = useNavigate();
   const [pw, setPw] = useState('');
   const [msg, setMsg] = useState(null);
+  const [hasSession, setHasSession] = useState(null); // null = checking
+
+  useEffect(() => {
+    if (!supa) return;
+    // small delay: the recovery session from the email link is being set at page load
+    const id = setTimeout(() => {
+      supa.auth.getSession().then(({ data }) => setHasSession(!!data.session));
+    }, 800);
+    return () => clearTimeout(id);
+  }, []);
 
   async function submit(e) {
     e.preventDefault();
@@ -687,6 +697,22 @@ export function ResetPassword() {
   }
 
   if (!supa) return null;
+  if (hasSession === false) {
+    return (
+      <div className="page narrow">
+        <h1>{t({ en: 'Choose a new password', tr: 'Yeni şifre belirle' })}</h1>
+        <div className="notice err">
+          {t({
+            en: 'This reset link is invalid, expired or already used. Request a new one — each link works only once.',
+            tr: 'Bu sıfırlama bağlantısı geçersiz, süresi dolmuş veya zaten kullanılmış. Yeni bir bağlantı iste — her bağlantı yalnızca bir kez çalışır.',
+          })}
+        </div>
+        <button className="btn" onClick={() => nav('/auth')}>
+          {t({ en: 'Request a new link', tr: 'Yeni bağlantı iste' })}
+        </button>
+      </div>
+    );
+  }
   return (
     <div className="page narrow">
       <h1>{t({ en: 'Choose a new password', tr: 'Yeni şifre belirle' })}</h1>
