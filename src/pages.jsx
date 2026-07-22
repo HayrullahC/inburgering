@@ -625,7 +625,9 @@ export function Auth() {
         const { error } = await supa.auth.signInWithPassword({ email, password: pw, options: { captchaToken: captcha } });
         if (error) throw error;
       } else {
-        const redirectTo = location.origin + location.pathname + '#/reset';
+        // no #/reset fragment: Supabase appends its tokens as a fragment, which would
+        // collide with the HashRouter path; App routes to /reset on PASSWORD_RECOVERY
+        const redirectTo = location.origin + location.pathname;
         const { error } = await supa.auth.resetPasswordForEmail(email, { redirectTo, captchaToken: captcha });
         if (error) throw error;
         setMsg({ ok: true, text: t({ en: 'Password reset link sent to your email.', tr: 'Şifre sıfırlama bağlantısı e-postana gönderildi.' }) });

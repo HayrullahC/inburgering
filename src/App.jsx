@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useSyncExternalStore } from 'react';
-import { Routes, Route, NavLink, Link } from 'react-router-dom';
+import { Routes, Route, NavLink, Link, useNavigate } from 'react-router-dom';
 import { supa, subscribe, getAll, getP, setP, onLogin, onLogout } from './lib.js';
 import {
   Home, Vocab, Grammar, GrammarTopic, Exams, ExamList, ExamRunner, Auth, ResetPassword, Info,
@@ -34,23 +34,31 @@ export function useUser() {
   return useContext(UserCtx);
 }
 
+// Captured at module load, before supabase-js parses (and strips) the URL fragment
+// that the password-recovery email link carries.
+const RECOVERY_AT_LOAD =
+  typeof window !== 'undefined' && window.location.hash.includes('type=recovery');
+
 export default function App() {
   useSyncExternalStore(subscribe, getAll); // re-render on any progress change
   const lang = getP('lang', 'en');
   const [user, setUser] = useState(null);
   const [ready, setReady] = useState(!supa); // wait for session check before deciding locked/unlocked
+  const nav = useNavigate();
 
   useEffect(() => {
     if (!supa) return;
+    if (RECOVERY_AT_LOAD) nav('/reset');
     supa.auth.getSession().then(({ data }) => {
       setUser(data.session?.user ?? null);
       if (data.session?.user) onLogin(data.session.user);
       setReady(true);
     });
-    const { data: sub } = supa.auth.onAuthStateChange((_e, session) => {
+    const { data: sub } = supa.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) onLogin(session.user);
       else onLogout();
+      if (event === 'PASSWORD_RECOVERY') nav('/reset');
     });
     return () => sub.subscription.unsubscribe();
   }, []);
