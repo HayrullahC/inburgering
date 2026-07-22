@@ -1,0 +1,130 @@
+import { createClient } from '@supabase/supabase-js';
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js';
+
+// ---------- Supabase (null when not configured => local-only mode) ----------
+export const supa =
+  SUPABASE_URL && SUPABASE_ANON_KEY ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+// ---------- Progress store (localStorage + optional cloud sync) ----------
+const LS_KEY = 'inb.progress';
+let state = {};
+try {
+  state = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
+} catch {
+  state = {};
+}
+const listeners = new Set();
+
+function persistLocal() {
+  localStorage.setItem(LS_KEY, JSON.stringify(state));
+}
+
+let saveTimer = null;
+let cloudUser = null;
+
+async function pushCloud() {
+  if (!supa || !cloudUser) return;
+  await supa.from('progress').upsert({
+    user_id: cloudUser.id,
+    data: state,
+    updated_at: new Date().toISOString(),
+  });
+}
+
+export function setP(key, value) {
+  state = { ...state, [key]: value };
+  persistLocal();
+  listeners.forEach((fn) => fn());
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(pushCloud, 1500);
+}
+
+export function getP(key, fallback = null) {
+  return key in state ? state[key] : fallback;
+}
+
+export function getAll() {
+  return state;
+}
+
+export function subscribe(fn) {
+  listeners.add(fn);
+  return () => listeners.delete(fn);
+}
+
+// Merge cloud data on login: keep best exam scores, union the rest.
+function mergeProgress(cloud) {
+  const merged = { ...cloud, ...state };
+  for (const k of Object.keys(cloud)) {
+    if (k.startsWith('exam:') && state[k] && cloud[k]) {
+      merged[k] = cloud[k].s > state[k].s ? cloud[k] : state[k];
+    }
+    if (k === 'fc' && state.fc) {
+      merged.fc = { ...cloud.fc, ...state.fc };
+    }
+  }
+  state = merged;
+  persistLocal();
+  listeners.forEach((fn) => fn());
+}
+
+export async function onLogin(user) {
+  cloudUser = user;
+  if (!supa || !user) return;
+  const { data } = await supa.from('progress').select('data').eq('user_id', user.id).maybeSingle();
+  if (data?.data) mergeProgress(data.data);
+  pushCloud();
+}
+
+export function onLogout() {
+  cloudUser = null;
+}
+
+// ---------- Text-to-speech (Dutch) ----------
+let nlVoice = null;
+function pickVoice() {
+  const voices = window.speechSynthesis?.getVoices() || [];
+  nlVoice = voices.find((v) => v.lang?.toLowerCase().startsWith('nl')) || null;
+}
+if (typeof window !== 'undefined' && window.speechSynthesis) {
+  pickVoice();
+  window.speechSynthesis.onvoiceschanged = pickVoice;
+}
+
+export function speak(text, rate = 0.9) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'nl-NL';
+  if (nlVoice) u.voice = nlVoice;
+  u.rate = rate;
+  window.speechSynthesis.speak(u);
+}
+
+export function stopSpeak() {
+  window.speechSynthesis?.cancel();
+}
+
+export function hasTTS() {
+  return typeof window !== 'undefined' && !!window.speechSynthesis;
+}
+
+// ---------- helpers ----------
+export function shuffle(arr, rnd = Math.random) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(rnd() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+export const MODULES = [
+  { id: 'lezen', icon: '📖', nl: 'Lezen', en: 'Reading', tr: 'Okuma' },
+  { id: 'luisteren', icon: '🎧', nl: 'Luisteren', en: 'Listening', tr: 'Dinleme' },
+  { id: 'schrijven', icon: '✍️', nl: 'Schrijven', en: 'Writing', tr: 'Yazma' },
+  { id: 'spreken', icon: '🗣️', nl: 'Spreken', en: 'Speaking', tr: 'Konuşma' },
+  { id: 'knm', icon: '🇳🇱', nl: 'KNM', en: 'Dutch society (KNM)', tr: 'Hollanda toplumu (KNM)' },
+];
+
+export const PASS_PCT = 60; // indicative pass mark shown to the user

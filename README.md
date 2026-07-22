@@ -1,25 +1,42 @@
-# Inburgering A2 Full Trainer – Expanded Edition
+# Inburgering A2 Kurs 🇳🇱
 
-Her bölümde **en az 20 parça** içerik. ONA için **muafiyet seçeneği** eklendi.
+Free, bilingual (English/Turkish) preparation course for the Dutch **inburgeringsexamen (A2)**.
 
-## İçerik sayıları
-- Vocabulary: 314
-- Grammar: 20 ders
-- Listening: 20
-- Reading: 20
-- Writing: 20
-- Speaking: 20
-- KNM: 40+ soru
-- Path: 12 modül
-- ONA: Rehber + “Ben muafım” butonu
+**Content:** 600 words with pictures & audio · complete A2 grammar (28 lessons) · 100 practice exams (Lezen, Luisteren, Schrijven, Spreken, KNM — 20 exams × 25 questions each) · 4 word games · email login with cloud progress sync.
 
-## Çalıştırma
+## Stack
+
+- React + Vite (SPA, HashRouter) — deployed free on **GitHub Pages**
+- **Supabase** — email auth (signup, login, password reset) + progress storage
+- Browser speech synthesis (Dutch voice) for all audio — free, no API keys
+
+## Development
+
 ```bash
-cd inburgering-a2-app
-python3 -m http.server 8000
+npm install
+npm run gen     # regenerate exam JSON files (already committed)
+npm run dev
 ```
-Chrome/Edge → http://localhost:8000
 
-ONA’dan muafs an ONA sekmesine git ve butona bas.
+## Supabase setup (one time, ~5 minutes)
 
-Veel succes! 🇳🇱
+1. Create a free project at [supabase.com](https://supabase.com).
+2. In **SQL Editor**, paste and run `supabase/schema.sql`.
+3. In **Settings → API**, copy the *Project URL* and *anon public* key into `src/config.js`.
+4. In **Authentication → URL Configuration**, set the Site URL to your site
+   (e.g. `https://hayrullahc.github.io/inburgering/`) and add it to the redirect list.
+5. Commit & push — done. Without this, the site still works fully; progress is stored in the browser only.
+
+## Deployment
+
+Every push to `main` builds and deploys to GitHub Pages automatically
+(`.github/workflows/deploy.yml`). No servers, no cost.
+
+## Data
+
+- `src/data/vocab.js` — 600 words: `{ nl, en, tr, ex, emoji, cat }`
+- `src/data/grammar.js` — 28 bilingual grammar lessons
+- `src/data/knm.js` — KNM question bank
+- `scripts/gen-exams.mjs` — deterministic exam generator → `src/data/exams/*.json`
+
+Veel succes! 💪
