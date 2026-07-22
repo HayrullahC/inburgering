@@ -8,4 +8,4 @@ export const SUPABASE_ANON_KEY = 'sb_publishable_4ZLJqjhDbqiUS6LHdHhbLw_OBO40VfE
 // Cloudflare Turnstile captcha (free): https://dash.cloudflare.com -> Turnstile -> Add widget
 // Put the SITE key here; put the SECRET key in Supabase -> Auth -> Attack Protection -> Enable CAPTCHA.
 // Leave empty to disable the captcha widget (then also disable it in Supabase).
-export const TURNSTILE_SITE_KEY = '';
+export const TURNSTILE_SITE_KEY = '0x4AAAAAAD7M9rsYbV9EEZDl';
