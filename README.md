@@ -25,7 +25,14 @@ npm run dev
 3. In **Settings → API**, copy the *Project URL* and *anon public* key into `src/config.js`.
 4. In **Authentication → URL Configuration**, set the Site URL to your site
    (e.g. `https://hayrullahc.github.io/inburgering/`) and add it to the redirect list.
-5. Commit & push — done. Without this, the site still works fully; progress is stored in the browser only.
+5. Commit & push — done. The site is members-only: until Supabase is configured, visitors only see a setup notice.
+
+## Captcha (Cloudflare Turnstile, free)
+
+1. Go to [dash.cloudflare.com](https://dash.cloudflare.com) → **Turnstile** → *Add widget* (hostname: `hayrullahc.github.io`, mode: Managed).
+2. Copy the **Site Key** into `TURNSTILE_SITE_KEY` in `src/config.js`.
+3. Copy the **Secret Key** into Supabase → **Authentication → Attack Protection → Enable CAPTCHA protection** (provider: Turnstile).
+4. Push. While `TURNSTILE_SITE_KEY` is empty the widget is hidden — keep Supabase captcha protection off in that case, otherwise logins fail.
 
 ## Deployment
 

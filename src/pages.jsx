@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { TURNSTILE_SITE_KEY } from './config.js';
 import { supa, speak, stopSpeak, getP, setP, MODULES, PASS_PCT, shuffle } from './lib.js';
 import { useLang, useT, useUser } from './App.jsx';
 import { VOCAB, CATS } from './data/vocab.js';
@@ -337,12 +338,54 @@ export function ExamRunner() {
 }
 
 // ---------------- Auth ----------------
+// Cloudflare Turnstile widget; renders nothing when no site key is configured.
+function Captcha({ onToken }) {
+  const ref = useRef(null);
+  const cbRef = useRef(onToken);
+  cbRef.current = onToken;
+
+  useEffect(() => {
+    if (!TURNSTILE_SITE_KEY || !ref.current) return;
+    let cancelled = false;
+    const el = ref.current;
+    function render() {
+      if (cancelled || !window.turnstile || el.childNodes.length) return;
+      window.turnstile.render(el, {
+        sitekey: TURNSTILE_SITE_KEY,
+        callback: (tok) => cbRef.current(tok),
+        'expired-callback': () => cbRef.current(''),
+        'error-callback': () => cbRef.current(''),
+      });
+    }
+    if (window.turnstile) {
+      render();
+    } else {
+      let s = document.getElementById('cf-turnstile-script');
+      if (!s) {
+        s = document.createElement('script');
+        s.id = 'cf-turnstile-script';
+        s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+        s.async = true;
+        document.head.appendChild(s);
+      }
+      s.addEventListener('load', render);
+    }
+    return () => { cancelled = true; };
+  }, []);
+
+  if (!TURNSTILE_SITE_KEY) return null;
+  return <div ref={ref} className="captcha" />;
+}
+
 export function Auth() {
   const t = useT();
   const user = useUser();
   const [mode, setMode] = useState('login'); // login | signup | forgot
   const [email, setEmail] = useState('');
   const [pw, setPw] = useState('');
+  const [name, setName] = useState('');
+  const [city, setCity] = useState('');
+  const [captchaToken, setCaptchaToken] = useState('');
   const [msg, setMsg] = useState(null);
   const [busy, setBusy] = useState(false);
 
@@ -361,9 +404,14 @@ export function Auth() {
   }
 
   if (user) {
+    const meta = user.user_metadata || {};
     return (
       <div className="page narrow">
-        <h1>👤 {user.email}</h1>
+        <h1>👤 {meta.full_name || user.email}</h1>
+        <p>
+          {user.email}
+          {meta.city ? ' · ' + meta.city : ''}
+        </p>
         <p>{t({ en: 'Your progress syncs to the cloud automatically.', tr: 'İlerlemen otomatik olarak buluta senkronlanıyor.' })}</p>
         <button className="btn" onClick={() => supa.auth.signOut()}>{t({ en: 'Log out', tr: 'Çıkış yap' })}</button>
       </div>
@@ -372,25 +420,40 @@ export function Auth() {
 
   async function submit(e) {
     e.preventDefault();
+    if (TURNSTILE_SITE_KEY && !captchaToken) {
+      setMsg({ ok: false, text: t({ en: 'Please complete the captcha first.', tr: 'Lütfen önce captcha doğrulamasını tamamla.' }) });
+      return;
+    }
     setBusy(true);
     setMsg(null);
+    const captcha = captchaToken || undefined;
     try {
       if (mode === 'signup') {
-        const { error } = await supa.auth.signUp({ email, password: pw });
+        const { error } = await supa.auth.signUp({
+          email,
+          password: pw,
+          options: {
+            captchaToken: captcha,
+            data: { full_name: name.trim(), city: city.trim() || null },
+          },
+        });
         if (error) throw error;
         setMsg({ ok: true, text: t({ en: 'Check your email to confirm your account.', tr: 'Hesabını onaylamak için e-postanı kontrol et.' }) });
       } else if (mode === 'login') {
-        const { error } = await supa.auth.signInWithPassword({ email, password: pw });
+        const { error } = await supa.auth.signInWithPassword({ email, password: pw, options: { captchaToken: captcha } });
         if (error) throw error;
       } else {
         const redirectTo = location.origin + location.pathname + '#/reset';
-        const { error } = await supa.auth.resetPasswordForEmail(email, { redirectTo });
+        const { error } = await supa.auth.resetPasswordForEmail(email, { redirectTo, captchaToken: captcha });
         if (error) throw error;
         setMsg({ ok: true, text: t({ en: 'Password reset link sent to your email.', tr: 'Şifre sıfırlama bağlantısı e-postana gönderildi.' }) });
       }
     } catch (err) {
       setMsg({ ok: false, text: err.message });
     }
+    // captcha tokens are single-use: reset the widget after every attempt
+    window.turnstile?.reset();
+    setCaptchaToken('');
     setBusy(false);
   }
 
@@ -400,11 +463,18 @@ export function Auth() {
       <p>{t({ en: 'This course is free, but for members only. Create an account with just your email address.', tr: 'Bu kurs ücretsizdir ama üyelere özeldir. Sadece e-posta adresinle hesap oluşturabilirsin.' })}</p>
       <p><small>{t({ en: 'Only an email address is needed — nothing else.', tr: 'Sadece e-posta adresi yeterli — başka bilgi yok.' })}</small></p>
       <form onSubmit={submit} className="auth-form">
-        <input type="email" required placeholder="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+        {mode === 'signup' && (
+          <>
+            <input required minLength={2} placeholder={t({ en: 'full name', tr: 'ad soyad' })} value={name} onChange={(e) => setName(e.target.value)} />
+            <input placeholder={t({ en: 'city in NL (optional)', tr: 'Hollanda’daki şehrin (isteğe bağlı)' })} value={city} onChange={(e) => setCity(e.target.value)} />
+          </>
+        )}
+        <input type="email" required placeholder={t({ en: 'email', tr: 'e-posta' })} value={email} onChange={(e) => setEmail(e.target.value)} />
         {mode !== 'forgot' && (
           <input type="password" required minLength={6} placeholder={t({ en: 'password (min 6)', tr: 'şifre (en az 6)' })} value={pw} onChange={(e) => setPw(e.target.value)} />
         )}
-        <button className="btn" disabled={busy}>
+        <Captcha onToken={setCaptchaToken} />
+        <button className="btn" disabled={busy || (TURNSTILE_SITE_KEY && !captchaToken)}>
           {mode === 'signup' ? t({ en: 'Create account', tr: 'Hesap oluştur' }) : mode === 'forgot' ? t({ en: 'Send reset link', tr: 'Bağlantı gönder' }) : t({ en: 'Log in', tr: 'Giriş yap' })}
         </button>
       </form>

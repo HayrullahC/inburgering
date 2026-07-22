@@ -81,7 +81,7 @@ export default function App() {
               {lang === 'en' ? '🇹🇷 TR' : '🇬🇧 EN'}
             </button>
             <Link to="/auth" className="acct-btn">
-              {user ? '👤 ' + (user.email || '').split('@')[0] : '👤 ' + t('login')}
+              {user ? '👤 ' + (user.user_metadata?.full_name || (user.email || '').split('@')[0]) : '👤 ' + t('login')}
             </Link>
           </div>
         </header>
