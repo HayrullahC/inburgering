@@ -109,6 +109,32 @@ export function hasTTS() {
   return typeof window !== 'undefined' && !!window.speechSynthesis;
 }
 
+// ---------- Speech-to-text (Dutch) for the Spreken exam ----------
+export function hasSTT() {
+  return typeof window !== 'undefined' && !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+}
+
+// Listen once and resolve with the transcript ('' when nothing was heard).
+export function listenOnce() {
+  return new Promise((resolve, reject) => {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) return reject(new Error('no-stt'));
+    const r = new SR();
+    r.lang = 'nl-NL';
+    r.interimResults = false;
+    r.maxAlternatives = 3;
+    let done = false;
+    r.onresult = (e) => {
+      done = true;
+      // join alternatives so keyword matching gets more chances
+      resolve([...e.results[0]].map((a) => a.transcript).join(' | '));
+    };
+    r.onerror = (e) => { if (!done) { done = true; reject(new Error(e.error)); } };
+    r.onend = () => { if (!done) resolve(''); };
+    r.start();
+  });
+}
+
 // ---------- helpers ----------
 export function shuffle(arr, rnd = Math.random) {
   const a = [...arr];

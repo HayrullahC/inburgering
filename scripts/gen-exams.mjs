@@ -259,183 +259,236 @@ const LUISTEREN_TEMPLATES = [
   },
 ];
 
-// ---------- SCHRIJVEN ----------
-const VERBS = [
-  { inf: 'werken', ik: 'werk', hij: 'werkt', imp: 'werkte', part: 'gewerkt', aux: 'heb' },
-  { inf: 'maken', ik: 'maak', hij: 'maakt', imp: 'maakte', part: 'gemaakt', aux: 'heb' },
-  { inf: 'wonen', ik: 'woon', hij: 'woont', imp: 'woonde', part: 'gewoond', aux: 'heb' },
-  { inf: 'leren', ik: 'leer', hij: 'leert', imp: 'leerde', part: 'geleerd', aux: 'heb' },
-  { inf: 'koken', ik: 'kook', hij: 'kookt', imp: 'kookte', part: 'gekookt', aux: 'heb' },
-  { inf: 'fietsen', ik: 'fiets', hij: 'fietst', imp: 'fietste', part: 'gefietst', aux: 'heb' },
-  { inf: 'betalen', ik: 'betaal', hij: 'betaalt', imp: 'betaalde', part: 'betaald', aux: 'heb' },
-  { inf: 'kopen', ik: 'koop', hij: 'koopt', imp: 'kocht', part: 'gekocht', aux: 'heb' },
-  { inf: 'gaan', ik: 'ga', hij: 'gaat', imp: 'ging', part: 'gegaan', aux: 'ben' },
-  { inf: 'komen', ik: 'kom', hij: 'komt', imp: 'kwam', part: 'gekomen', aux: 'ben' },
-  { inf: 'doen', ik: 'doe', hij: 'doet', imp: 'deed', part: 'gedaan', aux: 'heb' },
-  { inf: 'zien', ik: 'zie', hij: 'ziet', imp: 'zag', part: 'gezien', aux: 'heb' },
-  { inf: 'eten', ik: 'eet', hij: 'eet', imp: 'at', part: 'gegeten', aux: 'heb' },
-  { inf: 'drinken', ik: 'drink', hij: 'drinkt', imp: 'dronk', part: 'gedronken', aux: 'heb' },
-  { inf: 'lezen', ik: 'lees', hij: 'leest', imp: 'las', part: 'gelezen', aux: 'heb' },
-  { inf: 'schrijven', ik: 'schrijf', hij: 'schrijft', imp: 'schreef', part: 'geschreven', aux: 'heb' },
-  { inf: 'nemen', ik: 'neem', hij: 'neemt', imp: 'nam', part: 'genomen', aux: 'heb' },
-  { inf: 'geven', ik: 'geef', hij: 'geeft', imp: 'gaf', part: 'gegeven', aux: 'heb' },
-  { inf: 'spreken', ik: 'spreek', hij: 'spreekt', imp: 'sprak', part: 'gesproken', aux: 'heb' },
-  { inf: 'slapen', ik: 'slaap', hij: 'slaapt', imp: 'sliep', part: 'geslapen', aux: 'heb' },
+// ---------- SCHRIJVEN (open writing, scored on criteria like the real exam) ----------
+const ZIN = [
+  { s: 'Ik leer Nederlands, omdat …', model: 'Ik leer Nederlands, omdat ik in Nederland woon.' },
+  { s: 'Morgen ga ik …', model: 'Morgen ga ik boodschappen doen.' },
+  { s: 'Ik kan vandaag niet komen, want …', model: 'Ik kan vandaag niet komen, want ik ben ziek.' },
+  { s: 'In het weekend …', model: 'In het weekend ga ik naar het park.' },
+  { s: 'Als het regent, …', model: 'Als het regent, blijf ik thuis.' },
+  { s: 'Mijn favoriete eten is …', model: 'Mijn favoriete eten is rijst met kip.' },
+  { s: 'Volgend jaar wil ik …', model: 'Volgend jaar wil ik mijn examen halen.' },
+  { s: 'Ik vind de Nederlandse taal …', model: 'Ik vind de Nederlandse taal moeilijk maar leuk.' },
+  { s: 'Elke ochtend …', model: 'Elke ochtend drink ik koffie en eet ik brood.' },
+  { s: 'Mijn buurman is aardig, want …', model: 'Mijn buurman is aardig, want hij helpt mij vaak.' },
+  { s: 'Gisteren heb ik …', model: 'Gisteren heb ik voor mijn familie gekookt.' },
+  { s: 'Mijn kinderen …', model: 'Mijn kinderen gaan naar de basisschool.' },
+  { s: 'In Nederland is het vaak …', model: 'In Nederland is het vaak koud en nat.' },
+  { s: 'Ik spaar geld voor …', model: 'Ik spaar geld voor een auto.' },
+  { s: 'Op mijn werk moet ik …', model: 'Op mijn werk moet ik veel met klanten praten.' },
+  { s: 'Ik ga naar de dokter, omdat …', model: 'Ik ga naar de dokter, omdat ik hoofdpijn heb.' },
 ];
-const PREPS = [
-  { s: 'Ik woon ___ Amsterdam.', a: 'in', w: ['op', 'naar', 'bij'] },
-  { s: 'Ik wacht ___ de bus.', a: 'op', w: ['in', 'aan', 'van'] },
-  { s: 'Wij gaan morgen ___ de markt.', a: 'naar', w: ['op', 'in', 'bij'] },
-  { s: 'Het boek ligt ___ de tafel.', a: 'op', w: ['in', 'naar', 'tussen'] },
-  { s: 'Ik houd ___ Turkse thee.', a: 'van', w: ['op', 'aan', 'met'] },
-  { s: 'Zij kijkt ___ de televisie.', a: 'naar', w: ['op', 'van', 'bij'] },
-  { s: 'Hij werkt ___ een fabriek.', a: 'in', w: ['op', 'aan', 'naar'] },
-  { s: 'De kat slaapt ___ de bank.', a: 'op', w: ['naar', 'van', 'tussen'] },
-  { s: 'Ik ga ___ de fiets naar het werk.', a: 'met', w: ['op', 'in', 'naar'] },
-  { s: 'De apotheek is ___ het ziekenhuis.', a: 'naast', w: ['tussen', 'onder', 'naar'] },
-  { s: 'Wij eten ___ zes uur.', a: 'om', w: ['op', 'in', 'naar'] },
-  { s: 'Zij denkt vaak ___ haar familie.', a: 'aan', w: ['op', 'in', 'naar'] },
-  { s: 'De les begint ___ maandag.', a: 'op', w: ['om', 'in', 'naar'] },
-  { s: 'Hij praat ___ het weer.', a: 'over', w: ['op', 'aan', 'naar'] },
+const TOPICS = [
+  { q: 'uw familie', model: 'Ik heb een vrouw en twee kinderen. Mijn kinderen gaan naar de basisschool. Wij wonen samen in Utrecht.' },
+  { q: 'uw werk', model: 'Ik werk als kok in een restaurant. Ik werk vijf dagen per week. Ik vind mijn werk leuk.' },
+  { q: 'uw huis', model: 'Ik woon in een flat met drie kamers. Mijn huis heeft een klein balkon. De buren zijn aardig.' },
+  { q: 'uw hobby', model: 'Mijn hobby is koken. Ik kook elke dag voor mijn familie. In het weekend probeer ik nieuwe recepten.' },
+  { q: 'het weer vandaag', model: 'Vandaag is het koud en het regent. Ik neem mijn paraplu mee. Morgen wordt het beter.' },
+  { q: 'uw favoriete eten', model: 'Mijn favoriete eten is rijst met kip. Mijn moeder kookte het vroeger ook. Ik eet het elke week.' },
+  { q: 'uw woonplaats', model: 'Ik woon in Rotterdam. Het is een grote stad met een mooie haven. Er zijn veel winkels en parken.' },
+  { q: 'uw dag', model: 'Ik sta om zeven uur op. Daarna breng ik de kinderen naar school en ga ik naar mijn werk. Om zes uur eten wij samen.' },
 ];
-const FORMAL = [
-  { q: 'Hoe begin je een formele brief aan een onbekende persoon?', a: 'Geachte heer/mevrouw,', w: ['Hoi!', 'Hé jij,', 'Dag vriend,'] },
-  { q: 'Hoe sluit je een formele brief af?', a: 'Met vriendelijke groet,', w: ['Doei!', 'Kusjes,', 'Later,'] },
-  { q: 'Je schrijft een brief aan mevrouw Jansen. Hoe begin je?', a: 'Geachte mevrouw Jansen,', w: ['Hoi Jansen!', 'Hallo mevrouw!', 'Hé Jansen,'] },
-  { q: 'Welke zin is geschikt voor een formele e-mail?', a: 'Ik wil graag een afspraak maken.', w: ['Ik wil nu een afspraak!', 'Geef me een afspraak.', 'Afspraak. Nu.'] },
-  { q: 'Je meldt je kind ziek bij school. Welke zin is goed?', a: 'Mijn zoon is ziek en kan vandaag niet naar school komen.', w: ['Mijn zoon heeft geen zin vandaag.', 'School is saai vandaag.', 'Wij gaan winkelen vandaag.'] },
-  { q: 'Je zegt een afspraak af. Welke zin is beleefd?', a: 'Helaas kan ik niet komen. Kunnen we een nieuwe afspraak maken?', w: ['Ik kom niet, punt.', 'Vergeet de afspraak maar.', 'Geen tijd!'] },
-  { q: 'Wat schrijf je in de onderwerpregel van een e-mail over je huur?', a: 'Vraag over mijn huurcontract', w: ['hoi', 'lees dit nu', 'belangrijk!!!!'] },
-  { q: 'Welke zin is correct Nederlands?', a: 'Ik heb gisteren een brief geschreven.', w: ['Ik heb gisteren een brief geschreven heb.', 'Ik geschreven heb een brief gisteren.', 'Gisteren ik een brief schrijven.'] },
+const STREETS = ['Kerkstraat', 'Schoolstraat', 'Molenweg', 'Dorpsstraat', 'Beatrixlaan', 'Julianastraat'];
+const BDATES = ['12-05-1990', '03-11-1985', '25-01-1995', '17-08-1988', '30-06-1992'];
+const SURNAMES = ['Yılmaz', 'de Vries', 'Demir', 'Jansen', 'Kaya', 'Bakker'];
+const MSGS = [
+  {
+    q: 'Schrijf een kort bericht aan uw werkgever. Schrijf: (1) dat u ziek bent, (2) dat u vandaag niet komt werken, (3) wanneer u denkt terug te komen.',
+    pts: [
+      { d: 'U schrijft dat u ziek bent', kw: [['ziek']] },
+      { d: 'U schrijft dat u vandaag niet komt', kw: [['niet'], ['thuis']] },
+      { d: 'U schrijft wanneer u terugkomt', kw: [['morgen'], ['maandag'], ['dinsdag'], ['woensdag'], ['donderdag'], ['vrijdag'], ['volgende'], ['beter']] },
+    ],
+    model: 'Beste meneer De Vries, ik ben ziek. Ik kan vandaag helaas niet komen werken. Ik denk dat ik morgen weer beter ben. Met vriendelijke groet, Ahmed',
+  },
+  {
+    q: 'U gaat twee dagen weg. Schrijf een briefje aan uw buurvrouw. Schrijf: (1) dat u weggaat, (2) of zij de planten water wil geven, (3) bedank haar.',
+    pts: [
+      { d: 'U schrijft dat u weggaat', kw: [['weg'], ['vakantie'], ['dagen']] },
+      { d: 'U vraagt om de planten water te geven', kw: [['plant'], ['water']] },
+      { d: 'U bedankt haar', kw: [['dank'], ['bedankt']] },
+    ],
+    model: 'Beste buurvrouw, wij gaan twee dagen weg. Wilt u alstublieft de planten water geven? Alvast heel erg bedankt! Groetjes, Fatma',
+  },
+  {
+    q: 'Schrijf een e-mail aan uw docent. Schrijf: (1) dat u morgen niet naar de les komt, (2) waarom u niet komt, (3) sluit netjes af met een groet.',
+    pts: [
+      { d: 'U schrijft dat u niet naar de les komt', kw: [['niet'], ['kom']] },
+      { d: 'U schrijft waarom', kw: [['ziek'], ['afspraak'], ['werk'], ['dokter'], ['omdat'], ['want']] },
+      { d: 'U sluit af met een groet', kw: [['groet'], ['groetjes']] },
+    ],
+    model: 'Beste docent, ik kom morgen niet naar de les, omdat ik een afspraak bij de dokter heb. Sorry! Met vriendelijke groet, Ali',
+  },
+  {
+    q: 'Schrijf een bericht aan de huisarts. Schrijf: (1) dat u uw afspraak wilt afzeggen, (2) waarom, (3) dat u een nieuwe afspraak wilt maken.',
+    pts: [
+      { d: 'U zegt de afspraak af', kw: [['afspraak'], ['afzeggen']] },
+      { d: 'U schrijft waarom', kw: [['ziek'], ['werk'], ['omdat'], ['want'], ['kan', 'niet']] },
+      { d: 'U vraagt om een nieuwe afspraak', kw: [['nieuwe'], ['andere'], ['wanneer']] },
+    ],
+    model: 'Geachte heer/mevrouw, ik wil mijn afspraak van dinsdag afzeggen, want ik moet werken. Kan ik een nieuwe afspraak maken? Met vriendelijke groet, Zeynep Kaya',
+  },
+  {
+    q: 'De verwarming in uw huis is kapot. Schrijf een bericht aan de verhuurder. Schrijf: (1) wat het probleem is, (2) dat u wilt dat het gerepareerd wordt, (3) wanneer u thuis bent.',
+    pts: [
+      { d: 'U schrijft het probleem', kw: [['verwarming'], ['kapot']] },
+      { d: 'U vraagt om reparatie', kw: [['repareren'], ['maken'], ['monteur']] },
+      { d: 'U schrijft wanneer u thuis bent', kw: [['thuis'], ['uur'], ['morgen'], ['vandaag']] },
+    ],
+    model: 'Geachte verhuurder, de verwarming in mijn huis is kapot. Kunt u die snel laten repareren? Ik ben morgen de hele dag thuis. Met vriendelijke groet, Hasan Demir',
+  },
+  {
+    q: 'Nodig uw vriend(in) uit om te komen eten. Schrijf: (1) de uitnodiging, (2) wanneer (dag en tijd), (3) vraag of hij/zij komt.',
+    pts: [
+      { d: 'U nodigt uit om te eten', kw: [['eten'], ['kom']] },
+      { d: 'U schrijft dag of tijd', kw: [['zaterdag'], ['zondag'], ['vrijdag'], ['uur']] },
+      { d: 'U vraagt of hij/zij komt', kw: [['kom', 'je'], ['laat', 'weten'], ['kun', 'je']] },
+    ],
+    model: 'Hoi Sara! Kom je zaterdag bij ons eten? Wij eten om zes uur. Laat je even weten of je komt? Groetjes, Elif',
+  },
+  {
+    q: 'Uw kind is ziek. Schrijf een bericht aan de school. Schrijf: (1) dat uw kind ziek is, (2) dat het vandaag niet komt, (3) sluit netjes af.',
+    pts: [
+      { d: 'U schrijft dat uw kind ziek is', kw: [['ziek']] },
+      { d: 'U schrijft dat het niet komt', kw: [['niet'], ['thuis']] },
+      { d: 'U sluit netjes af', kw: [['groet'], ['groetjes'], ['dank']] },
+    ],
+    model: 'Beste juf, mijn zoon Emre is ziek. Hij komt vandaag niet naar school. Met vriendelijke groet, mevrouw Yılmaz',
+  },
+  {
+    q: 'Uw buurman heeft u geholpen met verhuizen. Schrijf een bedankbriefje. Schrijf: (1) waarvoor u bedankt, (2) dat u het erg aardig vond, (3) nodig hem uit voor koffie.',
+    pts: [
+      { d: 'U bedankt voor de hulp', kw: [['dank'], ['bedankt'], ['helpen'], ['hulp']] },
+      { d: 'U schrijft dat u het aardig vond', kw: [['aardig'], ['lief'], ['fijn'], ['blij']] },
+      { d: 'U nodigt uit voor koffie', kw: [['koffie'], ['thee'], ['langs']] },
+    ],
+    model: 'Beste buurman, heel erg bedankt voor uw hulp bij de verhuizing! Dat vond ik erg aardig van u. Komt u zaterdag een kopje koffie drinken? Groetjes, Mehmet',
+  },
 ];
-const FIELDS = [
-  { f: 'achternaam', a: 'Yılmaz', w: ['Amsterdam', '12-05-1990', '06-12345678'] },
-  { f: 'voornaam', a: 'Ahmed', w: ['1234 AB', 'Utrecht', 'Kerkstraat 12'] },
-  { f: 'geboortedatum', a: '12-05-1990', w: ['Rotterdam', 'Yılmaz', '06-12345678'] },
-  { f: 'adres', a: 'Kerkstraat 12', w: ['12-05-1990', 'Ahmed', 'ahmed@mail.nl'] },
-  { f: 'postcode', a: '1234 AB', w: ['06-12345678', 'Den Haag', '12-05-1990'] },
-  { f: 'woonplaats', a: 'Utrecht', w: ['Kerkstraat 12', '1234 AB', 'Yılmaz'] },
-  { f: 'telefoonnummer', a: '06-12345678', w: ['1234 AB', 'ahmed@mail.nl', 'Yılmaz'] },
-  { f: 'e-mailadres', a: 'ahmed@mail.nl', w: ['06-12345678', 'Kerkstraat 12', '12-05-1990'] },
-  { f: 'handtekening', a: 'je eigen handtekening', w: ['je pasfoto', 'je postcode', 'je banknummer'] },
-];
-const SENTENCES = [
-  { ok: 'Morgen ga ik naar de dokter.', bad: ['Morgen ik ga naar de dokter.', 'Morgen naar de dokter ik ga.', 'Ik morgen ga naar de dokter.'] },
-  { ok: 'Ik wil een nieuwe fiets kopen.', bad: ['Ik wil kopen een nieuwe fiets.', 'Ik een nieuwe fiets wil kopen.', 'Wil ik een nieuwe fiets kopen morgen.'] },
-  { ok: 'Zij werkt elke dag in de winkel.', bad: ['Zij elke dag werkt in de winkel.', 'Elke dag zij werkt in de winkel.', 'Zij werkt in de winkel elke dag in.'] },
-  { ok: 'Ik blijf thuis, omdat ik ziek ben.', bad: ['Ik blijf thuis, omdat ik ben ziek.', 'Ik blijf thuis, omdat ben ik ziek.', 'Ik thuis blijf, omdat ik ziek ben.'] },
-  { ok: 'Kunt u dat nog een keer zeggen?', bad: ['U kunt dat nog een keer zeggen?', 'Kunt u dat zeggen nog een keer u?', 'U dat nog een keer zeggen kunt?'] },
-  { ok: 'Wij hebben gisteren boodschappen gedaan.', bad: ['Wij hebben gedaan gisteren boodschappen.', 'Wij gisteren hebben boodschappen gedaan.', 'Gisteren wij hebben boodschappen gedaan.'] },
-  { ok: 'De kinderen spelen buiten in de tuin.', bad: ['De kinderen buiten spelen in de tuin.', 'Buiten de kinderen spelen in de tuin.', 'De kinderen spelen in de tuin buiten spelen.'] },
-  { ok: 'Als het regent, blijf ik thuis.', bad: ['Als het regent, ik blijf thuis.', 'Als regent het, blijf ik thuis.', 'Als het regent, thuis ik blijf.'] },
-  { ok: 'Ik sta elke ochtend om zeven uur op.', bad: ['Ik opsta elke ochtend om zeven uur.', 'Ik sta op elke ochtend om zeven uur sta.', 'Elke ochtend ik sta om zeven uur op.'] },
-  { ok: 'Hij heeft de rekening al betaald.', bad: ['Hij heeft al betaald de rekening.', 'Hij de rekening al heeft betaald.', 'Hij heeft de rekening al gebetaald.'] },
-];
-
 function makeSchrijven(rnd) {
-  const nouns = VOCAB.filter((w) => /^(de|het) [a-zà-ü]+$/i.test(w.nl));
   const qs = [];
-  let i = 0;
+  const zin = shuffleS(rnd, ZIN);
+  const msgs = shuffleS(rnd, MSGS);
+  const topics = shuffleS(rnd, TOPICS);
+  let zi = 0, mi = 0, ti = 0;
   while (qs.length < QUESTIONS) {
-    const kind = i % 5;
-    if (kind === 0) {
-      const v = pick(rnd, VERBS);
-      const form = pick(rnd, ['ik', 'hij', 'perf', 'imp']);
-      if (form === 'ik') qs.push(fin(rnd, { q: `Kies de juiste vorm: Ik ___ vandaag. (${v.inf})` }, v.ik, [v.hij, v.inf, v.imp]));
-      else if (form === 'hij') qs.push(fin(rnd, { q: `Kies de juiste vorm: Hij ___ nu. (${v.inf})` }, v.hij, [v.ik, v.inf, v.part]));
-      else if (form === 'perf') qs.push(fin(rnd, { q: `Kies de juiste vorm: Ik ${v.aux} gisteren ___. (${v.inf})` }, v.part, [v.imp, v.inf, v.hij]));
-      else qs.push(fin(rnd, { q: `Kies de juiste vorm: Gisteren ___ ik veel. (${v.inf})` }, v.imp, [v.part, v.ik, v.inf]));
-    } else if (kind === 1) {
-      const w = pick(rnd, nouns);
-      const art = w.nl.startsWith('de ') ? 'de' : 'het';
-      const noun = w.nl.replace(/^(de|het) /, '');
-      qs.push(fin(rnd, { q: `Welk lidwoord hoort bij '${noun}'?` }, art, [art === 'de' ? 'het' : 'de', 'allebei goed', 'geen lidwoord']));
-    } else if (kind === 2) {
-      const pr = pick(rnd, PREPS);
-      qs.push(fin(rnd, { q: `Vul in: ${pr.s}` }, pr.a, pr.w));
-    } else if (kind === 3) {
-      const fm = pick(rnd, FORMAL);
-      qs.push(fin(rnd, { q: fm.q }, fm.a, fm.w));
-      const fl = pick(rnd, FIELDS);
-      if (qs.length < QUESTIONS) qs.push(fin(rnd, { q: `Je vult een formulier in. Wat schrijf je bij '${fl.f}'?` }, fl.a, fl.w));
+    const kind = qs.length % 5;
+    if (kind === 0 || kind === 2) {
+      const z = zin[zi++ % zin.length];
+      qs.push({ t: 'zin', q: 'Maak de zin af: ' + z.s, min: 3, model: z.model });
+    } else if (kind === 1 || kind === 4) {
+      const first = pick(rnd, NAMES);
+      const last = pick(rnd, SURNAMES);
+      const street = pick(rnd, STREETS);
+      const nr = pick(rnd, NUMS);
+      const city = pick(rnd, CITIES);
+      const date = pick(rnd, BDATES);
+      const phone = pick(rnd, PHONES);
+      const fields = [
+        ['voornaam', [first]],
+        ['achternaam', [last]],
+        ['straat', [street]],
+        ['woonplaats', [city]],
+        ['geboortedatum', [date]],
+        ['telefoonnummer', [phone]],
+      ];
+      const [field, acc] = pick(rnd, fields);
+      qs.push({
+        t: 'form',
+        q: `Lees: "Je heet ${first} ${last}. Je woont in de ${street} ${nr} in ${city}. Je bent geboren op ${date}. Je telefoonnummer is ${phone}."\nVul het formulier in bij: ${field}`,
+        acc,
+        model: acc[0],
+      });
+    } else if (qs.length % 10 === 3) {
+      const tp = topics[ti++ % topics.length];
+      qs.push({ t: 'open', q: `Schrijf drie zinnen over ${tp.q}.`, min: 12, model: tp.model });
     } else {
-      const sn = pick(rnd, SENTENCES);
-      qs.push(fin(rnd, { q: 'Welke zin is correct?' }, sn.ok, sn.bad));
+      const m = msgs[mi++ % msgs.length];
+      qs.push({ t: 'msg', q: m.q, pts: m.pts, min: 15, model: m.model });
     }
-    i++;
   }
   return qs.slice(0, QUESTIONS);
 }
 
-// ---------- SPREKEN ----------
-const SITUATIONS = [
-  { q: 'Je bent te laat op je werk. Wat zeg je?', a: 'Sorry dat ik te laat ben. De bus had vertraging.', w: ['Lekker weer vandaag!', 'Dat is jouw probleem.', 'Tot morgen allemaal!'] },
-  { q: 'Je buurvrouw heeft je geholpen met een brief. Wat zeg je?', a: 'Heel erg bedankt voor uw hulp!', w: ['Dat was makkelijk voor u.', 'Tot nooit meer!', 'Dat duurde lang, zeg.'] },
-  { q: 'Je begrijpt de dokter niet. Wat zeg je?', a: 'Kunt u dat alstublieft nog een keer uitleggen?', w: ['Praat maar tegen mijn hand.', 'Dat is niet mijn probleem.', 'Ik ga naar huis.'] },
-  { q: 'Iemand niest naast je. Wat zeg je?', a: 'Gezondheid!', w: ['Eet smakelijk!', 'Welterusten!', 'Gefeliciteerd!'] },
-  { q: 'Je collega is jarig. Wat zeg je?', a: 'Gefeliciteerd met je verjaardag!', w: ['Beterschap!', 'Sterkte ermee!', 'Eet smakelijk!'] },
-  { q: 'Je collega is ziek naar huis gegaan. Wat zeg je later aan de telefoon?', a: 'Beterschap! Ik hoop dat je snel weer beter bent.', w: ['Gefeliciteerd!', 'Veel plezier!', 'Fijne vakantie!'] },
-  { q: 'Je wilt in de winkel iets vragen aan een medewerker. Wat zeg je eerst?', a: 'Pardon, mag ik u iets vragen?', w: ['Hé, kom eens hier!', 'Luister nu naar mij.', 'Snel, ik heb haast!'] },
-  { q: 'Je gaat weg bij een afspraak. Wat zeg je?', a: 'Bedankt en tot ziens!', w: ['Goedemorgen!', 'Welkom!', 'Met wie spreek ik?'] },
-  { q: 'De bakker vraagt: "Anders nog iets?" Je wilt niets meer. Wat zeg je?', a: 'Nee, dank u. Dat was het.', w: ['Ja, tot ziens!', 'Ik weet het niet, u wel?', 'Doe maar niks nooit.'] },
-  { q: 'Je neemt de telefoon op. Wat zeg je?', a: 'Goedemiddag, met Ahmed.', w: ['Wie is daar?! Zeg het snel!', 'Wat wil je?', 'Bel later maar.'] },
-  { q: 'Je gast komt binnen. Wat zeg je?', a: 'Welkom! Kom binnen en ga zitten.', w: ['Tot ziens!', 'Waarom ben je hier?', 'Ik heb geen tijd.'] },
-  { q: 'Iemand houdt de deur voor je open. Wat zeg je?', a: 'Dank u wel!', w: ['Loop door!', 'Eindelijk!', 'Wat doet u?'] },
-  { q: 'Je begint te eten met collega’s. Wat zeg je?', a: 'Eet smakelijk!', w: ['Gezondheid!', 'Welterusten!', 'Goede reis!'] },
-  { q: 'Je vriend gaat morgen examen doen. Wat zeg je?', a: 'Veel succes met je examen!', w: ['Beterschap!', 'Gecondoleerd.', 'Welterusten!'] },
-  { q: 'Je stoot per ongeluk iemand aan in de bus. Wat zeg je?', a: 'Oh, sorry! Neem me niet kwalijk.', w: ['Kijk zelf uit!', 'De bus is te vol.', 'Niets zeggen en wegkijken.'] },
-  { q: 'De kassière geeft je te weinig wisselgeld. Wat zeg je?', a: 'Pardon, ik denk dat het wisselgeld niet klopt.', w: ['Jij steelt van mij!', 'Ik bel nu de politie!', 'Niets, je loopt weg.'] },
-  { q: 'Je wilt een dag vrij vragen aan je baas. Wat zeg je?', a: 'Zou ik vrijdag een dag vrij mogen nemen?', w: ['Ik kom vrijdag niet, punt.', 'Vrijdag werk ik nooit meer.', 'Regel het maar.'] },
-  { q: 'Iemand vraagt de weg naar het station. Je weet het niet. Wat zeg je?', a: 'Sorry, ik weet het niet. Ik ben hier ook nieuw.', w: ['Loop maar ergens heen.', 'Vraag het niet aan mij!', 'Het station bestaat niet.'] },
-  { q: 'Je krijgt een cadeau. Wat zeg je?', a: 'Wat leuk! Dank je wel!', w: ['Heb je de bon nog?', 'Dat had ik al.', 'Volgende keer beter.'] },
-  { q: 'De leraar praat te snel. Wat zeg je?', a: 'Kunt u iets langzamer praten, alstublieft?', w: ['Praat normaal!', 'Ik luister toch niet.', 'Stop met praten.'] },
-  { q: 'Je belt je werk omdat je ziek bent. Wat zeg je?', a: 'Goedemorgen, ik ben ziek en kan vandaag helaas niet komen werken.', w: ['Ik heb vandaag geen zin.', 'Het is te koud buiten.', 'Ik ga vandaag winkelen.'] },
-  { q: 'Iemand zegt: "Fijn weekend!" Wat zeg je terug?', a: 'Dank je, jij ook!', w: ['Nee, bedankt.', 'Dat bepaal ik zelf.', 'Welterusten!'] },
-  { q: 'Je wilt afrekenen in een restaurant. Wat zeg je?', a: 'Mogen wij de rekening, alstublieft?', w: ['Wij gaan weg, doei!', 'Het eten was gratis, toch?', 'Breng meer eten!'] },
-  { q: 'Je nieuwe collega stelt zich voor. Wat zeg je?', a: 'Aangenaam! Ik ben Ahmed.', w: ['Wat moet je?', 'Ik ken jou niet.', 'Ga weg alsjeblieft.'] },
+// ---------- SPREKEN (speak into the microphone, like the real exam) ----------
+const SP_QA = [
+  { l: 'Hoe heet u?', kw: [['heet'], ['naam'], ['ben']], model: 'Ik heet Ahmed Yılmaz.' },
+  { l: 'Waar woont u?', kw: [['woon']], model: 'Ik woon in Utrecht.' },
+  { l: 'Hoe oud bent u?', kw: [['jaar']], model: 'Ik ben 35 jaar.' },
+  { l: 'Wat is uw beroep?', kw: [['ben'], ['werk']], model: 'Ik werk als kok.' },
+  { l: 'Heeft u kinderen?', kw: [['ja'], ['nee'], ['kind']], model: 'Ja, ik heb twee kinderen.' },
+  { l: 'Waar komt u vandaan?', kw: [['uit']], model: 'Ik kom uit Turkije.' },
+  { l: 'Hoe gaat u naar uw werk?', kw: [['fiets'], ['bus'], ['auto'], ['trein'], ['loop']], model: 'Ik ga met de bus naar mijn werk.' },
+  { l: 'Wat eet u graag?', kw: [['eet'], ['graag'], ['lekker']], model: 'Ik eet graag rijst met kip.' },
+  { l: 'Wat doet u in het weekend?', kw: [['ga'], ['doe'], ['bezoek'], ['speel'], ['wandel'], ['kook'], ['sport']], model: 'In het weekend wandel ik in het park.' },
+  { l: 'Hoe laat staat u op?', kw: [['uur'], ['half'], ['sta']], model: 'Ik sta om zeven uur op.' },
+  { l: 'Welke taal spreekt u thuis?', kw: [['spreek'], ['turks'], ['nederlands'], ['arabisch'], ['engels']], model: 'Thuis spreek ik Turks.' },
+  { l: 'Wat is uw lievelingsseizoen?', kw: [['zomer'], ['winter'], ['lente'], ['herfst']], model: 'Mijn lievelingsseizoen is de zomer.' },
 ];
-const QA = [
-  { vq: 'Hoe heet u?', mk: (rnd) => `Ik heet ${pick(rnd, NAMES)} ${pick(rnd, ['de Vries', 'Yılmaz', 'Jansen', 'Demir'])}.` },
-  { vq: 'Waar woont u?', mk: (rnd) => `Ik woon in ${pick(rnd, CITIES)}.` },
-  { vq: 'Hoe oud bent u?', mk: (rnd) => `Ik ben ${pick(rnd, ['25', '31', '38', '42', '47'])} jaar.` },
-  { vq: 'Wat is uw beroep?', mk: (rnd) => `Ik ben ${pick(rnd, JOBS)}.` },
-  { vq: 'Heeft u kinderen?', mk: (rnd) => `Ja, ik heb ${pick(rnd, ['één kind', 'twee kinderen', 'drie kinderen'])}.` },
-  { vq: 'Waar komt u vandaan?', mk: (rnd) => `Ik kom uit ${pick(rnd, ['Turkije', 'Syrië', 'Marokko', 'Polen'])}.` },
-  { vq: 'Hoe gaat u naar uw werk?', mk: (rnd) => `Ik ga met ${pick(rnd, ['de fiets', 'de bus', 'de trein', 'de auto'])}.` },
-  { vq: 'Wat doet u graag in het weekend?', mk: (rnd) => `Ik ${pick(rnd, ['wandel graag in het park', 'kook graag voor mijn familie', 'sport graag', 'lees graag'])}.` },
-  { vq: 'Hoe laat staat u op?', mk: (rnd) => `Ik sta om ${pick(rnd, ['zes uur', 'zeven uur', 'half acht'])} op.` },
-  { vq: 'Wat is uw telefoonnummer?', mk: (rnd) => `Mijn nummer is ${pick(rnd, PHONES)}.` },
+const SP_SIT = [
+  { l: 'Uw collega is jarig. Wat zegt u?', kw: [['gefeliciteerd']], model: 'Gefeliciteerd met je verjaardag!' },
+  { l: 'U bent te laat op uw werk. Wat zegt u?', kw: [['sorry'], ['laat'], ['excuses']], model: 'Sorry dat ik te laat ben.' },
+  { l: 'Iemand niest naast u. Wat zegt u?', kw: [['gezondheid']], model: 'Gezondheid!' },
+  { l: 'U begint te eten met collega’s. Wat zegt u?', kw: [['smakelijk']], model: 'Eet smakelijk!' },
+  { l: 'Uw vriend doet morgen examen. Wat zegt u?', kw: [['succes']], model: 'Veel succes met je examen!' },
+  { l: 'Uw collega is ziek. Wat zegt u aan de telefoon?', kw: [['beterschap'], ['beter']], model: 'Beterschap! Word snel beter.' },
+  { l: 'U krijgt een cadeau. Wat zegt u?', kw: [['dank'], ['bedankt'], ['leuk']], model: 'Wat leuk! Dank je wel!' },
+  { l: 'U wilt het raam openzetten. Wat vraagt u?', kw: [['mag'], ['raam']], model: 'Mag ik het raam openzetten?' },
+  { l: 'U zoekt het station. Wat vraagt u?', kw: [['waar'], ['station']], model: 'Pardon, weet u waar het station is?' },
+  { l: 'U neemt de telefoon op. Wat zegt u?', kw: [['met'], ['goedemorgen'], ['goedemiddag'], ['hallo']], model: 'Goedemiddag, met Ahmed.' },
+  { l: 'De leraar praat te snel. Wat zegt u?', kw: [['langzamer'], ['langzaam'], ['herhalen']], model: 'Kunt u iets langzamer praten, alstublieft?' },
+  { l: 'U gaat weg bij een afspraak. Wat zegt u?', kw: [['ziens'], ['bedankt'], ['dag']], model: 'Bedankt en tot ziens!' },
 ];
-const POLITE = [
-  { sit: 'Je wilt het raam openen.', a: 'Mag ik het raam openzetten?', w: ['Raam open. Nu.', 'Het raam is dicht.', 'Ik heb het warm, en jij?'] },
-  { sit: 'Je wilt de suiker op tafel pakken.', a: 'Kunt u mij de suiker aangeven, alstublieft?', w: ['Geef die suiker!', 'Suiker is lekker.', 'Waarom staat de suiker daar?'] },
-  { sit: 'Je wilt eerder weg van je werk.', a: 'Zou ik vandaag iets eerder weg mogen?', w: ['Ik ga nu weg, doei.', 'Werk zelf maar door.', 'Ik kom morgen niet.'] },
-  { sit: 'Je wilt dat iemand langzamer praat.', a: 'Kunt u alstublieft iets langzamer praten?', w: ['Praat niet zo raar.', 'Ik hoor je niet, stil!', 'Zeg het in het Engels.'] },
-  { sit: 'Je zoekt het station.', a: 'Pardon, weet u waar het station is?', w: ['Waar is dat station nou?!', 'Breng mij naar het station.', 'Het station is weg.'] },
-  { sit: 'Je wilt een nieuwe afspraak maken.', a: 'Zou ik een nieuwe afspraak kunnen maken?', w: ['Nieuwe afspraak. Regelen.', 'Ik kom wel een keer langs.', 'De vorige afspraak was stom.'] },
-  { sit: 'Je wilt in de bus zitten naast iemand.', a: 'Is deze plaats vrij?', w: ['Ga opzij.', 'Dit is mijn stoel, denk ik.', 'Sta op alsjeblieft nu.'] },
-  { sit: 'Je wilt iets teruggeven in de winkel.', a: 'Ik wil dit graag ruilen. Ik heb de bon nog.', w: ['Dit is kapot, geef geld.', 'Jullie winkel is slecht.', 'Ik neem gewoon iets anders mee.'] },
+const SP_SCENE = [
+  { sc: '👩 🚲 🌧️', kw: [['fiets'], ['regen'], ['vrouw']], model: 'Een vrouw fietst in de regen.' },
+  { sc: '👨‍🍳 🍲', kw: [['kook'], ['eten'], ['man'], ['keuken']], model: 'Een man kookt eten in de keuken.' },
+  { sc: '👧 📖', kw: [['lees'], ['boek'], ['meisje']], model: 'Een meisje leest een boek.' },
+  { sc: '👴 🐕 🌳', kw: [['hond'], ['man'], ['wandel'], ['loop'], ['park']], model: 'Een oude man wandelt met zijn hond in het park.' },
+  { sc: '👦 ⚽', kw: [['voetbal'], ['speel'], ['jongen'], ['bal']], model: 'Een jongen speelt voetbal.' },
+  { sc: '👩‍⚕️ 💉 👶', kw: [['baby'], ['prik'], ['dokter'], ['zuster']], model: 'De baby krijgt een prik van de dokter.' },
+  { sc: '🛒 🍎 🥖', kw: [['boodschappen'], ['winkel'], ['koop'], ['supermarkt']], model: 'Iemand doet boodschappen in de supermarkt.' },
+  { sc: '☀️ 🏖️ 👨‍👩‍👧', kw: [['strand'], ['zon'], ['familie'], ['vakantie']], model: 'Een familie is op het strand. De zon schijnt.' },
+  { sc: '🧹 🏠', kw: [['schoon'], ['huis'], ['poets']], model: 'Iemand maakt het huis schoon.' },
+  { sc: '🚌 🕗 🏃', kw: [['bus'], ['rent'], ['haast'], ['laat']], model: 'Een man rent naar de bus, want hij is laat.' },
+];
+const SP_PREF = [
+  { l: 'Wat drinkt u liever: thee of koffie? En waarom?', kw: [['thee'], ['koffie']], model: 'Ik drink liever thee, omdat ik dat lekkerder vind.' },
+  { l: 'Wat vindt u leuker: de zomer of de winter? En waarom?', kw: [['zomer'], ['winter']], model: 'Ik vind de zomer leuker, omdat het dan warm is.' },
+  { l: 'Wat gebruikt u liever: de fiets of de auto? En waarom?', kw: [['fiets'], ['auto']], model: 'Ik ga liever met de fiets, omdat het gezond is.' },
+  { l: 'Waar woont u liever: in de stad of in een dorp? En waarom?', kw: [['stad'], ['dorp']], model: 'Ik woon liever in de stad, omdat alles dichtbij is.' },
+  { l: 'Wat eet u liever: pizza of salade? En waarom?', kw: [['pizza'], ['salade']], model: 'Ik eet liever pizza, omdat ik dat heel lekker vind.' },
+  { l: 'Wat doet u liever: een film kijken of een boek lezen? En waarom?', kw: [['film'], ['boek']], model: 'Ik kijk liever een film, omdat dat gezellig is.' },
+  { l: 'Waar gaat u liever naartoe: het strand of het bos? En waarom?', kw: [['strand'], ['bos']], model: 'Ik ga liever naar het strand, omdat ik van de zee houd.' },
+  { l: 'Wanneer sport u liever: in de ochtend of in de avond? En waarom?', kw: [['ochtend'], ['avond']], model: 'Ik sport liever in de ochtend, omdat ik dan energie heb.' },
 ];
 
 function makeSpreken(rnd) {
+  const nazeg = shuffleS(rnd, VOCAB.filter((w) => w.ex.split(' ').length >= 4)).slice(0, 8);
+  const qa = shuffleS(rnd, SP_QA);
+  const sit = shuffleS(rnd, SP_SIT);
+  const scenes = shuffleS(rnd, SP_SCENE);
+  const prefs = shuffleS(rnd, SP_PREF);
   const qs = [];
-  const sits = shuffleS(rnd, SITUATIONS);
-  const pols = shuffleS(rnd, POLITE);
-  let si = 0;
-  let pi = 0;
+  let ai = 0, si = 0, ci = 0, pi = 0, ni = 0;
   while (qs.length < QUESTIONS) {
-    const kind = qs.length % 5;
-    if (kind === 0 || kind === 3) {
-      const s = sits[si++ % sits.length];
-      qs.push(fin(rnd, { q: s.q }, s.a, s.w));
-    } else if (kind === 1 || kind === 4) {
-      const item = pick(rnd, QA);
-      const correct = item.mk(rnd);
-      const wrongs = pickN(rnd, QA.filter((x) => x !== item), 3).map((x) => x.mk(rnd));
-      qs.push(fin(rnd, { l: item.vq, q: 'Je hoort een vraag. Wat is een goed antwoord?' }, correct, wrongs));
+    const k = qs.length % 5;
+    if (k === 0) {
+      const x = qa[ai++ % qa.length];
+      qs.push({ t: 'sp', l: x.l, q: 'Luister naar de vraag en geef antwoord.', kw: x.kw, model: x.model });
+    } else if (k === 1) {
+      const x = sit[si++ % sit.length];
+      qs.push({ t: 'sp', l: x.l, q: 'Luister naar de situatie. Wat zegt u?', kw: x.kw, model: x.model });
+    } else if (k === 2) {
+      const w = nazeg[ni++ % nazeg.length];
+      const words = w.ex.replace(/[.!?,]/g, '').split(' ').filter((x) => x.length > 3);
+      const kw = [words.slice(-2)];
+      qs.push({ t: 'sp', l: w.ex, q: 'Luister en zeg de zin na.', kw, model: w.ex });
+    } else if (k === 3) {
+      const x = scenes[ci++ % scenes.length];
+      qs.push({ t: 'sp', sc: x.sc, q: 'Kijk naar de afbeelding. Wat ziet u? Vertel in één of twee zinnen.', kw: x.kw, model: x.model });
     } else {
-      const pz = pols[pi++ % pols.length];
-      qs.push(fin(rnd, { q: `${pz.sit} Wat zeg je?` }, pz.a, pz.w));
+      const x = prefs[pi++ % prefs.length];
+      qs.push({ t: 'sp', l: x.l, q: 'Luister naar de vraag. Zeg wat u liever heeft en waarom.', kw: x.kw, model: x.model });
     }
   }
   return qs.slice(0, QUESTIONS);
@@ -476,11 +529,11 @@ for (const mod of ['lezen', 'luisteren', 'schrijven', 'spreken', 'knm']) {
   for (let e = 0; e < EXAMS; e++) {
     const rnd = mulberry32(e * 1000 + mod.length * 77 + 1);
     const qs = mod === 'knm' ? makeKnm(rnd, e) : builders[mod](rnd);
-    // sanity: every question has 4 options and a valid answer
+    // sanity: MCQ modules need 4 options + valid answer; open modules need a type + model
+    const open = mod === 'schrijven' || mod === 'spreken';
     for (const q of qs) {
-      if (!q.o || q.o.length !== 4 || q.a < 0 || q.a > 3) {
-        throw new Error(`Bad question in ${mod} exam ${e + 1}: ${JSON.stringify(q)}`);
-      }
+      const bad = open ? !q.t || !q.model : !q.o || q.o.length !== 4 || q.a < 0 || q.a > 3;
+      if (bad) throw new Error(`Bad question in ${mod} exam ${e + 1}: ${JSON.stringify(q)}`);
     }
     exams.push(qs);
   }

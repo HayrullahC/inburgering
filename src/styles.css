@@ -207,6 +207,29 @@ a.card:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(28, 35, 
 .auth-links { display: flex; gap: 14px; margin-top: 14px; }
 .captcha { min-height: 0; }
 .captcha:not(:empty) { margin: 4px 0; }
+
+/* open-answer exams (schrijven / spreken) */
+.scene { font-size: 56px; text-align: center; margin: 16px 0; letter-spacing: 8px; }
+.btn.mic { background: var(--err); }
+.transcript {
+  background: var(--card);
+  border: 2px dashed var(--line);
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin: 12px auto;
+  max-width: 480px;
+  font-size: 16px;
+}
+.write-area {
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font-size: 15px;
+  font-family: inherit;
+  resize: vertical;
+}
+.chk { list-style: none; padding: 0; margin: 8px 0; }
+.chk li { margin: 4px 0; }
 .notice { background: #eef1f8; border-radius: 10px; padding: 12px 16px; margin: 14px 0; line-height: 1.5; }
 .notice.ok { background: #f0fdf4; }
 .notice.err { background: #fef2f2; color: var(--err); }

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { TURNSTILE_SITE_KEY } from './config.js';
-import { supa, speak, stopSpeak, getP, setP, MODULES, PASS_PCT, shuffle } from './lib.js';
+import { supa, speak, stopSpeak, getP, setP, MODULES, PASS_PCT, hasSTT, listenOnce } from './lib.js';
 import { useLang, useT, useUser } from './App.jsx';
 import { VOCAB, CATS } from './data/vocab.js';
 import { GRAMMAR } from './data/grammar.js';
@@ -247,6 +247,7 @@ export function ExamRunner() {
   }, [mod, n]);
 
   if (!qs) return <div className="page">…</div>;
+  if (mod === 'schrijven' || mod === 'spreken') return <OpenRunner key={mod + n} mod={mod} n={n} qs={qs} />;
 
   const q = qs[i];
   const isListening = !!q.l;
@@ -337,6 +338,181 @@ export function ExamRunner() {
   );
 }
 
+// ---------------- Open-answer runner (Schrijven: type, Spreken: microphone) ----------------
+function normTxt(s) {
+  return (s || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+function hitAny(text, groups) {
+  const tx = normTxt(text);
+  return (groups || []).some((g) => g.length > 0 && g.every((w) => tx.includes(normTxt(w))));
+}
+// Heuristic grading per task type; the user can always override (real exams are human-graded).
+function evalOpen(q, text) {
+  const words = normTxt(text).split(' ').filter(Boolean).length;
+  if (q.t === 'form') return { ok: q.acc.some((a) => normTxt(text).includes(normTxt(a))), words };
+  if (q.t === 'msg') {
+    const hits = q.pts.map((p) => hitAny(text, p.kw));
+    return { ok: hits.filter(Boolean).length >= q.pts.length - 1 && words >= q.min, hits, words };
+  }
+  if (q.t === 'sp') return { ok: hitAny(text, q.kw), words };
+  return { ok: words >= (q.min || 3), words }; // zin / open
+}
+
+function OpenRunner({ mod, n, qs }) {
+  const t = useT();
+  const nav = useNavigate();
+  const speaking = mod === 'spreken';
+  const [i, setI] = useState(0);
+  const [ans, setAns] = useState('');
+  const [fb, setFb] = useState(null); // null | {ok, hits?, self?}
+  const [results, setResults] = useState([]);
+  const [rec, setRec] = useState(false);
+  const [sttFail, setSttFail] = useState(!hasSTT());
+  const [done, setDone] = useState(false);
+
+  useEffect(() => stopSpeak, []);
+  const q = qs[i];
+
+  async function record() {
+    setRec(true);
+    setFb(null);
+    try {
+      const text = await listenOnce();
+      setAns(text);
+      if (text) setFb(evalOpen(q, text));
+    } catch {
+      setSttFail(true); // no mic / no permission -> self-grading mode
+    }
+    setRec(false);
+  }
+
+  function next(okOverride) {
+    const ok = okOverride ?? fb?.ok ?? false;
+    const res = [...results, { ok, ans }];
+    setResults(res);
+    setAns('');
+    setFb(null);
+    stopSpeak();
+    if (i + 1 < qs.length) setI(i + 1);
+    else {
+      const score = res.filter((r) => r.ok).length;
+      const key = `exam:${mod}:${n}`;
+      const prev = getP(key);
+      if (!prev || score > prev.s) setP(key, { s: score, t: qs.length, d: new Date().toISOString() });
+      setDone(true);
+    }
+  }
+
+  if (done) {
+    const score = results.filter((r) => r.ok).length;
+    const pct = Math.round((score / qs.length) * 100);
+    return (
+      <div className="page narrow">
+        <h1>{pct >= PASS_PCT ? '🎉' : '😕'} {score}/{qs.length} ({pct}%)</h1>
+        <div className="row-btns">
+          <button className="btn" onClick={() => { setI(0); setResults([]); setDone(false); }}>{t({ en: 'Retry', tr: 'Tekrar' })}</button>
+          <button className="btn ghost" onClick={() => nav('/exams/' + mod)}>{t({ en: 'Exam list', tr: 'Sınav listesi' })}</button>
+        </div>
+        <h3>{t({ en: 'Review', tr: 'İnceleme' })}</h3>
+        {qs.map((qq, j) => (
+          <div key={j} className={'rev ' + (results[j].ok ? 'ok' : 'fail')}>
+            <b>{j + 1}. {qq.l || qq.q}</b>
+            {results[j].ans && <div>🗣 {results[j].ans}</div>}
+            <div>💡 {qq.model}</div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className="page narrow">
+      <div className="exam-head">
+        <span>{MODULES.find((m) => m.id === mod)?.nl} — {t({ en: 'Exam', tr: 'Sınav' })} {n}</span>
+        <span>{i + 1}/{qs.length}</span>
+      </div>
+      <div className="bar"><div style={{ width: (i / qs.length) * 100 + '%' }} /></div>
+
+      <p className="gram-p"><b>{q.q}</b></p>
+      {q.sc && <div className="scene">{q.sc}</div>}
+      {q.l && (
+        <div className="listen-box">
+          <button className="btn big" onClick={() => speak(q.l, 0.85)}>▶ {t({ en: 'Play', tr: 'Dinle' })}</button>
+        </div>
+      )}
+
+      {speaking ? (
+        <div className="listen-box">
+          {!sttFail ? (
+            <>
+              <button className="btn big mic" onClick={record} disabled={rec}>
+                {rec ? '🎤 …' : '🎤 ' + t({ en: 'Speak your answer', tr: 'Cevabını söyle' })}
+              </button>
+              {ans && <div className="transcript">🗣 {ans}</div>}
+              {ans === '' && fb === null && !rec && (
+                <p><small>{t({ en: 'Press the microphone and answer out loud in Dutch.', tr: 'Mikrofona bas ve Hollandaca sesli cevap ver.' })}</small></p>
+              )}
+            </>
+          ) : (
+            <>
+              <p><small>{t({ en: 'Microphone not available in this browser — answer out loud, then grade yourself.', tr: 'Bu tarayıcıda mikrofon kullanılamıyor — sesli cevap ver, sonra kendini puanla.' })}</small></p>
+              {!fb && <button className="btn" onClick={() => setFb({ self: true })}>{t({ en: 'I answered out loud', tr: 'Sesli cevap verdim' })}</button>}
+            </>
+          )}
+        </div>
+      ) : (
+        <div className="auth-form" style={{ maxWidth: 'none' }}>
+          {q.t === 'msg' || q.t === 'open' ? (
+            <textarea className="write-area" rows={5} value={ans} onChange={(e) => setAns(e.target.value)} placeholder={t({ en: 'Write your answer in Dutch…', tr: 'Cevabını Hollandaca yaz…' })} />
+          ) : (
+            <input value={ans} onChange={(e) => setAns(e.target.value)} placeholder={t({ en: 'Your answer…', tr: 'Cevabın…' })} />
+          )}
+          {!fb && (
+            <button className="btn" disabled={!ans.trim()} onClick={() => setFb(evalOpen(q, ans))}>
+              {t({ en: 'Check', tr: 'Kontrol et' })}
+            </button>
+          )}
+        </div>
+      )}
+
+      {fb && (
+        <div className={'notice ' + (fb.self ? '' : fb.ok ? 'ok' : 'err')}>
+          {!fb.self && <p><b>{fb.ok ? '✔ ' + t({ en: 'Looks good!', tr: 'İyi görünüyor!' }) : '✘ ' + t({ en: 'Not all criteria found.', tr: 'Bazı kriterler eksik.' })}</b></p>}
+          {fb.hits && q.pts && (
+            <ul className="chk">
+              {q.pts.map((p, j) => <li key={j}>{fb.hits[j] ? '✅' : '❌'} {p.d}</li>)}
+            </ul>
+          )}
+          <p>💡 <i>{t({ en: 'Example answer', tr: 'Örnek cevap' })}:</i> {q.model} <Speaker text={q.model} /></p>
+          <div className="row-btns">
+            {fb.self ? (
+              <>
+                <button className="btn good" onClick={() => next(true)}>✔ {t({ en: 'I said it well', tr: 'Doğru söyledim' })}</button>
+                <button className="btn again" onClick={() => next(false)}>✘ {t({ en: 'Not quite', tr: 'Söyleyemedim' })}</button>
+              </>
+            ) : (
+              <>
+                <button className="btn" onClick={() => next()}>{i + 1 === qs.length ? t({ en: 'Finish', tr: 'Bitir' }) : t({ en: 'Next', tr: 'Sonraki' })} →</button>
+                {!fb.ok && (
+                  <button className="btn ghost" onClick={() => next(true)}>
+                    {t({ en: 'My answer was fine — count it', tr: 'Cevabım doğruydu — say' })}
+                  </button>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ---------------- Auth ----------------
 // Cloudflare Turnstile widget; renders nothing when no site key is configured.
 function Captcha({ onToken }) {
@@ -383,7 +559,8 @@ export function Auth() {
   const [mode, setMode] = useState('login'); // login | signup | forgot
   const [email, setEmail] = useState('');
   const [pw, setPw] = useState('');
-  const [name, setName] = useState('');
+  const [first, setFirst] = useState('');
+  const [last, setLast] = useState('');
   const [city, setCity] = useState('');
   const [captchaToken, setCaptchaToken] = useState('');
   const [msg, setMsg] = useState(null);
@@ -434,7 +611,12 @@ export function Auth() {
           password: pw,
           options: {
             captchaToken: captcha,
-            data: { full_name: name.trim(), city: city.trim() || null },
+            data: {
+              first_name: first.trim(),
+              last_name: last.trim(),
+              full_name: (first.trim() + ' ' + last.trim()).trim(),
+              city: city.trim() || null,
+            },
           },
         });
         if (error) throw error;
@@ -465,7 +647,8 @@ export function Auth() {
       <form onSubmit={submit} className="auth-form">
         {mode === 'signup' && (
           <>
-            <input required minLength={2} placeholder={t({ en: 'full name', tr: 'ad soyad' })} value={name} onChange={(e) => setName(e.target.value)} />
+            <input required minLength={2} placeholder={t({ en: 'first name', tr: 'ad' })} value={first} onChange={(e) => setFirst(e.target.value)} />
+            <input required minLength={2} placeholder={t({ en: 'last name', tr: 'soyad' })} value={last} onChange={(e) => setLast(e.target.value)} />
             <input placeholder={t({ en: 'city in NL (optional)', tr: 'Hollanda’daki şehrin (isteğe bağlı)' })} value={city} onChange={(e) => setCity(e.target.value)} />
           </>
         )}
