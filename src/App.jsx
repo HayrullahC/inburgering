@@ -38,12 +38,14 @@ export default function App() {
   useSyncExternalStore(subscribe, getAll); // re-render on any progress change
   const lang = getP('lang', 'en');
   const [user, setUser] = useState(null);
+  const [ready, setReady] = useState(!supa); // wait for session check before deciding locked/unlocked
 
   useEffect(() => {
     if (!supa) return;
     supa.auth.getSession().then(({ data }) => {
       setUser(data.session?.user ?? null);
       if (data.session?.user) onLogin(data.session.user);
+      setReady(true);
     });
     const { data: sub } = supa.auth.onAuthStateChange((_e, session) => {
       setUser(session?.user ?? null);
@@ -54,20 +56,22 @@ export default function App() {
   }, []);
 
   const t = (k) => UI[k][lang];
+  // members-only: without a logged-in user (or without Supabase config) everything is locked
+  const locked = !user;
 
   return (
     <LangCtx.Provider value={lang}>
       <UserCtx.Provider value={user}>
         <header className="topbar">
           <Link to="/" className="brand">🇳🇱 Inburgering A2</Link>
-          <nav>
+          {!locked && <nav>
             <NavLink to="/">{t('home')}</NavLink>
             <NavLink to="/vocab">{t('vocab')}</NavLink>
             <NavLink to="/grammar">{t('grammar')}</NavLink>
             <NavLink to="/exams">{t('exams')}</NavLink>
             <NavLink to="/games">{t('games')}</NavLink>
             <NavLink to="/info">{t('info')}</NavLink>
-          </nav>
+          </nav>}
           <div className="topbar-right">
             <button
               className="lang-btn"
@@ -82,6 +86,12 @@ export default function App() {
           </div>
         </header>
         <main>
+          {!ready ? null : locked ? (
+            <Routes>
+              <Route path="/reset" element={<ResetPassword />} />
+              <Route path="*" element={<Auth />} />
+            </Routes>
+          ) : (
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/vocab" element={<Vocab />} />
@@ -99,6 +109,7 @@ export default function App() {
             <Route path="/reset" element={<ResetPassword />} />
             <Route path="/info" element={<Info />} />
           </Routes>
+          )}
         </main>
         <footer className="footer">
           Gratis oefenmateriaal — geen officiële examensite. Veel succes! 💪

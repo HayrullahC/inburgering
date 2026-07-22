@@ -352,8 +352,8 @@ export function Auth() {
         <h1>🔐 {t({ en: 'Account', tr: 'Hesap' })}</h1>
         <div className="notice">
           {t({
-            en: 'Cloud sync is not configured yet. The site owner must fill in src/config.js with the Supabase project keys (see README). Your progress is still saved in this browser.',
-            tr: 'Bulut senkronu henüz yapılandırılmadı. Site sahibi src/config.js dosyasına Supabase anahtarlarını girmeli (README’ye bak). İlerlemen yine de bu tarayıcıda kaydediliyor.',
+            en: 'This site is for members only, but login is not configured yet. The site owner must fill in src/config.js with the Supabase project keys (see README).',
+            tr: 'Bu site üyelere özeldir ama giriş sistemi henüz yapılandırılmadı. Site sahibi src/config.js dosyasına Supabase anahtarlarını girmeli (README’ye bak).',
           })}
         </div>
       </div>
@@ -397,6 +397,7 @@ export function Auth() {
   return (
     <div className="page narrow">
       <h1>🔐 {mode === 'signup' ? t({ en: 'Sign up', tr: 'Kayıt ol' }) : mode === 'forgot' ? t({ en: 'Reset password', tr: 'Şifre sıfırla' }) : t({ en: 'Log in', tr: 'Giriş yap' })}</h1>
+      <p>{t({ en: 'This course is free, but for members only. Create an account with just your email address.', tr: 'Bu kurs ücretsizdir ama üyelere özeldir. Sadece e-posta adresinle hesap oluşturabilirsin.' })}</p>
       <p><small>{t({ en: 'Only an email address is needed — nothing else.', tr: 'Sadece e-posta adresi yeterli — başka bilgi yok.' })}</small></p>
       <form onSubmit={submit} className="auth-form">
         <input type="email" required placeholder="email" value={email} onChange={(e) => setEmail(e.target.value)} />
