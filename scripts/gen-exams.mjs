@@ -375,7 +375,7 @@ function makeSchrijven(rnd) {
     const kind = qs.length % 5;
     if (kind === 0 || kind === 2) {
       const z = zin[zi++ % zin.length];
-      qs.push({ t: 'zin', q: 'Maak de zin af: ' + z.s, min: 3, model: z.model });
+      qs.push({ t: 'zin', q: 'Maak de zin af: ' + z.s, min: 2, model: z.model });
     } else if (kind === 1 || kind === 4) {
       const first = pick(rnd, NAMES);
       const last = pick(rnd, SURNAMES);

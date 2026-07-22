@@ -440,6 +440,12 @@ function OpenRunner({ mod, n, qs }) {
       <div className="bar"><div style={{ width: (i / qs.length) * 100 + '%' }} /></div>
 
       <p className="gram-p"><b>{q.q}</b></p>
+      {!speaking && q.min && (
+        <p><small>
+          {t({ en: 'Criterion: at least ' + q.min + ' words', tr: 'Kriter: en az ' + q.min + ' kelime' })}
+          {q.pts ? t({ en: ' + the 3 content points above', tr: ' + yukarıdaki 3 içerik maddesi' }) : ''}
+        </small></p>
+      )}
       {q.sc && <div className="scene">{q.sc}</div>}
       {q.l && (
         <div className="listen-box">
@@ -483,7 +489,10 @@ function OpenRunner({ mod, n, qs }) {
 
       {fb && (
         <div className={'notice ' + (fb.self ? '' : fb.ok ? 'ok' : 'err')}>
-          {!fb.self && <p><b>{fb.ok ? '✔ ' + t({ en: 'Looks good!', tr: 'İyi görünüyor!' }) : '✘ ' + t({ en: 'Not all criteria found.', tr: 'Bazı kriterler eksik.' })}</b></p>}
+          {!fb.self && <p><b>{fb.ok ? '✔ ' + t({ en: 'Looks good!', tr: 'İyi görünüyor!' }) : '✘ ' + t({ en: 'Not all criteria met.', tr: 'Bazı kriterler eksik.' })}</b></p>}
+          {!fb.self && !fb.ok && q.min && fb.words < q.min && (
+            <p><small>{t({ en: 'You wrote ' + fb.words + ' word(s); at least ' + q.min + ' needed.', tr: fb.words + ' kelime yazdın; en az ' + q.min + ' gerekli.' })}</small></p>
+          )}
           {fb.hits && q.pts && (
             <ul className="chk">
               {q.pts.map((p, j) => <li key={j}>{fb.hits[j] ? '✅' : '❌'} {p.d}</li>)}
