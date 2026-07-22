@@ -249,12 +249,15 @@ export function Spell() {
   const [score, setScore] = useState(0);
   const inputRef = useRef(null);
 
+  // lowercase, strip accents, collapse spaces — 'een' matches 'één'
   function norm(s) {
-    return s.toLowerCase().trim().replace(/^(de|het|een)\s+/, '');
+    return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, ' ').trim();
   }
   function check() {
     if (state) return;
-    const ok = norm(val) === norm(w.nl);
+    const target = norm(w.nl);
+    // accept the word with its correct article or without one; a wrong article is wrong
+    const ok = norm(val) === target || norm(val) === target.replace(/^(de|het) /, '');
     setState(ok ? 'ok' : 'err');
     if (ok) setScore(score + 1);
     speak(w.nl);

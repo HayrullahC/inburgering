@@ -611,6 +611,7 @@ export function Auth() {
           password: pw,
           options: {
             captchaToken: captcha,
+            emailRedirectTo: location.origin + location.pathname,
             data: {
               first_name: first.trim(),
               last_name: last.trim(),
