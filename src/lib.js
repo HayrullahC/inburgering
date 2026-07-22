@@ -5,6 +5,26 @@ import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js';
 export const supa =
   SUPABASE_URL && SUPABASE_ANON_KEY ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
+// ---------- auth-redirect token capture ----------
+// Email links (password recovery, signup confirmation) return with tokens in the URL
+// fragment: '#access_token=…&type=recovery'. HashRouter normalizes that fragment and
+// supabase-js parses it asynchronously — a race that loses the tokens. So: grab them
+// synchronously at module load (before the router exists), set the session explicitly,
+// and rewrite the URL to the right page ourselves.
+if (typeof window !== 'undefined' && supa) {
+  const h = window.location.hash.replace(/^#\/?/, '');
+  if (h.includes('access_token=')) {
+    const p = new URLSearchParams(h);
+    const access_token = p.get('access_token');
+    const refresh_token = p.get('refresh_token');
+    const isRecovery = p.get('type') === 'recovery';
+    history.replaceState(null, '', window.location.pathname + (isRecovery ? '#/reset' : '#/'));
+    if (access_token && refresh_token) {
+      supa.auth.setSession({ access_token, refresh_token });
+    }
+  }
+}
+
 // ---------- Progress store (localStorage + optional cloud sync) ----------
 const LS_KEY = 'inb.progress';
 let state = {};
