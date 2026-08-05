@@ -2,7 +2,9 @@
 
 Free, bilingual (English/Turkish) preparation course for the Dutch **inburgeringsexamen (A2)**.
 
-**Content:** 600 words with pictures & audio · complete A2 grammar (28 lessons) · 100 practice exams (Lezen, Luisteren, Schrijven, Spreken, KNM — 20 exams × 25 questions each) · 4 word games · email login with cloud progress sync.
+**Content:** 1000 A2 words with pictures & audio · complete A2 grammar (30 lessons) · 250 practice exams (Lezen, Luisteren, Schrijven, Spreken, KNM — 50 exams × 25 questions each) · 4 word games · email login with cloud progress sync.
+
+Like the real exam: **Spreken** asks questions out loud and listens to your answer through the microphone (Dutch speech recognition + criteria scoring), **Schrijven** is open writing (sentence completion, forms, short messages) graded on visible criteria with model answers.
 
 ## Stack
 
@@ -34,6 +36,14 @@ table (the in-app 💬 button writes there) and gives the admin email (see `is_a
 that file and `ADMIN_EMAILS` in `src/config.js`) access to the `/admin` panel: feedback
 inbox + user stats.
 
+## Email sending (SMTP, free)
+
+Supabase's built-in mailer sends only ~2 emails/hour — enough for testing only.
+Connect a free SMTP provider (e.g. [Brevo](https://www.brevo.com), 300 mails/day, no domain needed):
+Brevo → **SMTP & API** → generate an SMTP key, then Supabase → **Project Settings →
+Authentication → SMTP Settings**: host `smtp-relay.brevo.com`, port `587`, the Brevo SMTP
+login as username, the key as password. Then raise the limit under **Authentication → Rate Limits**.
+
 ## Captcha (Cloudflare Turnstile, free)
 
 1. Go to [dash.cloudflare.com](https://dash.cloudflare.com) → **Turnstile** → *Add widget* (hostname: `hayrullahc.github.io`, mode: Managed).
@@ -48,8 +58,8 @@ Every push to `main` builds and deploys to GitHub Pages automatically
 
 ## Data
 
-- `src/data/vocab.js` — 600 words: `{ nl, en, tr, ex, emoji, cat }`
-- `src/data/grammar.js` — 28 bilingual grammar lessons
+- `src/data/vocab.js` — 1000 words: `{ nl, en, tr, ex, emoji, cat }`
+- `src/data/grammar.js` — 30 bilingual grammar lessons
 - `src/data/knm.js` — KNM question bank
 - `scripts/gen-exams.mjs` — deterministic exam generator → `src/data/exams/*.json`
 
