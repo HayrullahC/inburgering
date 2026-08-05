@@ -7,7 +7,7 @@ import { VOCAB } from '../src/data/vocab.js';
 import { KNM } from '../src/data/knm.js';
 
 const OUT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'src', 'data', 'exams');
-const EXAMS = 20;
+const EXAMS = 50;
 const QUESTIONS = 25;
 
 // ---------- seeded rng ----------

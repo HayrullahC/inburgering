@@ -46,6 +46,7 @@ async function pushCloud() {
   if (!supa || !cloudUser) return;
   await supa.from('progress').upsert({
     user_id: cloudUser.id,
+    email: cloudUser.email ?? null, // shown in the admin user list
     data: state,
     updated_at: new Date().toISOString(),
   });
@@ -174,3 +175,4 @@ export const MODULES = [
 ];
 
 export const PASS_PCT = 60; // indicative pass mark shown to the user
+export const EXAM_COUNT = 50; // exams per module (keep in sync with scripts/gen-exams.mjs)

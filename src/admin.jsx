@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { supa } from './lib.js';
+import { supa, MODULES, EXAM_COUNT } from './lib.js';
 import { ADMIN_EMAILS } from './config.js';
 import { useT, useUser } from './App.jsx';
 
@@ -152,10 +152,17 @@ function UserStats() {
   const t = useT();
   const [rows, setRows] = useState(null);
 
-  useEffect(() => {
-    supa.from('progress').select('user_id, updated_at, data').order('updated_at', { ascending: false })
+  function load() {
+    supa.from('progress').select('user_id, email, updated_at, data').order('updated_at', { ascending: false })
       .then(({ data, error }) => setRows(error ? [] : data));
-  }, []);
+  }
+  useEffect(load, []);
+
+  async function resetProgress(id, email) {
+    if (!confirm(t({ en: 'Reset ALL progress of ' + (email || id) + '?', tr: (email || id) + ' kullanıcısının TÜM ilerlemesi sıfırlansın mı?' }))) return;
+    await supa.from('progress').delete().eq('user_id', id);
+    load();
+  }
 
   if (!rows) return <p>…</p>;
 
@@ -166,7 +173,7 @@ function UserStats() {
     const d = r.data || {};
     const passed = Object.keys(d).filter((k) => k.startsWith('exam:') && d[k] && (d[k].s / d[k].t) * 100 >= 60).length;
     const words = Object.values(d.fc || {}).filter((b) => b >= 3).length;
-    return { id: r.user_id, seen: r.updated_at, passed, words, lang: d.lang || '—' };
+    return { id: r.user_id, email: r.email, seen: r.updated_at, passed, words, lang: d.lang || '—' };
   });
   const totPassed = stats.reduce((n, s) => n + s.passed, 0);
 
@@ -185,23 +192,29 @@ function UserStats() {
             <th>{t({ en: 'Exams passed', tr: 'Geçilen sınav' })}</th>
             <th>{t({ en: 'Words learned', tr: 'Öğrenilen kelime' })}</th>
             <th>{t({ en: 'Lang', tr: 'Dil' })}</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
           {stats.map((s) => (
             <tr key={s.id}>
-              <td><code>{s.id.slice(0, 8)}…</code></td>
+              <td>{s.email || <code>{s.id.slice(0, 8)}…</code>}</td>
               <td>{new Date(s.seen).toLocaleDateString()}</td>
-              <td>{s.passed}/100</td>
+              <td>{s.passed}/{MODULES.length * EXAM_COUNT}</td>
               <td>{s.words}</td>
               <td>{s.lang}</td>
+              <td>
+                <button className="linklike" onClick={() => resetProgress(s.id, s.email)}>
+                  🗑 {t({ en: 'Reset', tr: 'Sıfırla' })}
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
       <p><small>{t({
-        en: 'Emails are not shown here: the progress table stores only user IDs. Feedback rows include the email.',
-        tr: 'Burada e-posta görünmez: progress tablosu sadece kullanıcı ID tutar. Feedback kayıtlarında e-posta var.',
+        en: 'Emails appear after a user’s next sync. Deleting or banning an account itself: Supabase Dashboard → Authentication → Users.',
+        tr: 'E-postalar kullanıcının bir sonraki senkronunda görünür. Hesabın kendisini silme/banlama: Supabase Dashboard → Authentication → Users.',
       })}</small></p>
     </div>
   );

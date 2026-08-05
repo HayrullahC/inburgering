@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { TURNSTILE_SITE_KEY } from './config.js';
-import { supa, speak, stopSpeak, getP, setP, MODULES, PASS_PCT, hasSTT, listenOnce } from './lib.js';
+import { supa, speak, stopSpeak, getP, setP, MODULES, PASS_PCT, EXAM_COUNT, hasSTT, listenOnce } from './lib.js';
 import { useLang, useT, useUser } from './App.jsx';
 import { VOCAB, CATS } from './data/vocab.js';
 import { GRAMMAR } from './data/grammar.js';
@@ -30,8 +30,8 @@ export function Home() {
         <h1>{t({ en: 'Inburgering A2 Course', tr: 'Inburgering A2 Kursu' })}</h1>
         <p>
           {t({
-            en: 'Free full preparation for the Dutch civic integration exam: 600 words, complete A2 grammar, 100 practice exams with audio, and word games. Progress is saved on this device — log in to sync across devices.',
-            tr: 'Hollanda uyum sınavına ücretsiz tam hazırlık: 600 kelime, eksiksiz A2 grameri, sesli 100 deneme sınavı ve kelime oyunları. İlerleme bu cihazda kaydedilir — cihazlar arası senkron için giriş yapın.',
+            en: `Free full preparation for the Dutch civic integration exam: 600 words, complete A2 grammar, ${MODULES.length * EXAM_COUNT} practice exams with audio, and word games. Progress syncs across your devices.`,
+            tr: `Hollanda uyum sınavına ücretsiz tam hazırlık: 600 kelime, eksiksiz A2 grameri, sesli ${MODULES.length * EXAM_COUNT} deneme sınavı ve kelime oyunları. İlerlemen cihazların arasında senkronlanır.`,
           })}
         </p>
       </div>
@@ -41,7 +41,7 @@ export function Home() {
         <div className="stat"><b>{gramDone}</b><span>/{GRAMMAR.length} {t({ en: 'grammar topics', tr: 'gramer konusu' })}</span></div>
         <div className="stat">
           <b>{MODULES.reduce((n, m) => n + countPassed(m.id), 0)}</b>
-          <span>/100 {t({ en: 'exams passed', tr: 'geçilen sınav' })}</span>
+          <span>/{MODULES.length * EXAM_COUNT} {t({ en: 'exams passed', tr: 'geçilen sınav' })}</span>
         </div>
       </div>
 
@@ -52,8 +52,8 @@ export function Home() {
             <div className="mod-icon">{m.icon}</div>
             <h3>{m.nl}</h3>
             <p>{m[lang]}</p>
-            <div className="bar"><div style={{ width: countPassed(m.id) * 5 + '%' }} /></div>
-            <small>{countPassed(m.id)}/20</small>
+            <div className="bar"><div style={{ width: (countPassed(m.id) * 100) / EXAM_COUNT + '%' }} /></div>
+            <small>{countPassed(m.id)}/{EXAM_COUNT}</small>
           </Link>
         ))}
       </div>
@@ -70,7 +70,7 @@ export function Home() {
 
 function countPassed(mod) {
   let n = 0;
-  for (let i = 1; i <= 20; i++) {
+  for (let i = 1; i <= EXAM_COUNT; i++) {
     const r = getP(`exam:${mod}:${i}`);
     if (r && (r.s / r.t) * 100 >= PASS_PCT) n++;
   }
@@ -186,15 +186,15 @@ export function Exams() {
   return (
     <div className="page">
       <h1>📝 {t({ en: 'Practice exams', tr: 'Deneme sınavları' })}</h1>
-      <p>{t({ en: '5 modules × 20 exams × 25 questions. Pass mark: ' + PASS_PCT + '%.', tr: '5 modül × 20 sınav × 25 soru. Geçme notu: %' + PASS_PCT + '.' })}</p>
+      <p>{t({ en: `5 modules × ${EXAM_COUNT} exams × 25 questions. Pass mark: ${PASS_PCT}%.`, tr: `5 modül × ${EXAM_COUNT} sınav × 25 soru. Geçme notu: %${PASS_PCT}.` })}</p>
       <div className="grid">
         {MODULES.map((m) => (
           <Link key={m.id} to={'/exams/' + m.id} className="card mod-card">
             <div className="mod-icon">{m.icon}</div>
             <h3>{m.nl}</h3>
             <p>{m[lang]}</p>
-            <div className="bar"><div style={{ width: countPassed(m.id) * 5 + '%' }} /></div>
-            <small>{countPassed(m.id)}/20 {t({ en: 'passed', tr: 'geçildi' })}</small>
+            <div className="bar"><div style={{ width: (countPassed(m.id) * 100) / EXAM_COUNT + '%' }} /></div>
+            <small>{countPassed(m.id)}/{EXAM_COUNT} {t({ en: 'passed', tr: 'geçildi' })}</small>
           </Link>
         ))}
       </div>
@@ -212,7 +212,7 @@ export function ExamList() {
       <Link to="/exams">← {t({ en: 'Modules', tr: 'Modüller' })}</Link>
       <h1>{m.icon} {m.nl}</h1>
       <div className="exam-grid">
-        {Array.from({ length: 20 }, (_, i) => i + 1).map((n) => {
+        {Array.from({ length: EXAM_COUNT }, (_, i) => i + 1).map((n) => {
           const r = getP(`exam:${mod}:${n}`);
           const pct = r ? Math.round((r.s / r.t) * 100) : null;
           const cls = pct === null ? '' : pct >= PASS_PCT ? 'ok' : 'fail';
