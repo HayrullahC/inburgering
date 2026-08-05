@@ -5,6 +5,7 @@ import {
   Home, Vocab, Grammar, GrammarTopic, Exams, ExamList, ExamRunner, Auth, ResetPassword, Info,
 } from './pages.jsx';
 import { GamesHome, Flashcards, MatchGame, Sprint, Spell } from './games.jsx';
+import { AdminPage, FeedbackWidget, isAdmin } from './admin.jsx';
 
 // ---------- i18n ----------
 const UI = {
@@ -79,6 +80,7 @@ export default function App() {
             <NavLink to="/exams">{t('exams')}</NavLink>
             <NavLink to="/games">{t('games')}</NavLink>
             <NavLink to="/info">{t('info')}</NavLink>
+            {isAdmin(user) && <NavLink to="/admin">⚙️</NavLink>}
           </nav>}
           <div className="topbar-right">
             <button
@@ -116,9 +118,11 @@ export default function App() {
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset" element={<ResetPassword />} />
             <Route path="/info" element={<Info />} />
+            <Route path="/admin" element={<AdminPage />} />
           </Routes>
           )}
         </main>
+        {!locked && <FeedbackWidget />}
         <footer className="footer">
           Gratis oefenmateriaal — geen officiële examensite. Veel succes! 💪
         </footer>

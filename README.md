@@ -27,6 +27,13 @@ npm run dev
    (e.g. `https://hayrullahc.github.io/inburgering/`) and add it to the redirect list.
 5. Commit & push — done. The site is members-only: until Supabase is configured, visitors only see a setup notice.
 
+## Feedback & admin panel
+
+Run `supabase/feedback.sql` once in the Supabase SQL Editor. It creates the `feedback`
+table (the in-app 💬 button writes there) and gives the admin email (see `is_admin()` in
+that file and `ADMIN_EMAILS` in `src/config.js`) access to the `/admin` panel: feedback
+inbox + user stats.
+
 ## Captcha (Cloudflare Turnstile, free)
 
 1. Go to [dash.cloudflare.com](https://dash.cloudflare.com) → **Turnstile** → *Add widget* (hostname: `hayrullahc.github.io`, mode: Managed).

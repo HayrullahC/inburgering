@@ -1,0 +1,208 @@
+import React, { useEffect, useState } from 'react';
+import { supa } from './lib.js';
+import { ADMIN_EMAILS } from './config.js';
+import { useT, useUser } from './App.jsx';
+
+export function isAdmin(user) {
+  return !!user && ADMIN_EMAILS.includes(user.email);
+}
+
+// ---------------- Floating feedback button + form ----------------
+export function FeedbackWidget() {
+  const t = useT();
+  const user = useUser();
+  const [open, setOpen] = useState(false);
+  const [kind, setKind] = useState('bug');
+  const [msg, setMsg] = useState('');
+  const [state, setState] = useState(null); // null | busy | ok | err
+
+  if (!supa || !user) return null;
+
+  async function send(e) {
+    e.preventDefault();
+    setState('busy');
+    const { error } = await supa.from('feedback').insert({
+      user_id: user.id,
+      email: user.email,
+      kind,
+      message: msg.trim(),
+      page: location.hash || '#/',
+    });
+    if (error) {
+      setState('err');
+    } else {
+      setState('ok');
+      setMsg('');
+      setTimeout(() => { setOpen(false); setState(null); }, 1600);
+    }
+  }
+
+  return (
+    <>
+      <button className="fb-fab" onClick={() => setOpen(!open)} title="Feedback">
+        {open ? '✕' : '💬'}
+      </button>
+      {open && (
+        <form className="fb-panel" onSubmit={send}>
+          <b>{t({ en: 'Feedback', tr: 'Geri bildirim' })}</b>
+          <p className="fb-sub">
+            {t({ en: 'Found a bug? Want a feature? Tell me!', tr: 'Hata mı buldun? İsteğin mi var? Yaz bana!' })}
+          </p>
+          <select value={kind} onChange={(e) => setKind(e.target.value)}>
+            <option value="bug">🐞 {t({ en: 'Something is broken', tr: 'Bir şey çalışmıyor' })}</option>
+            <option value="idea">💡 {t({ en: 'Idea / request', tr: 'Fikir / istek' })}</option>
+            <option value="other">💬 {t({ en: 'Other', tr: 'Diğer' })}</option>
+          </select>
+          <textarea
+            rows={4}
+            required
+            minLength={5}
+            placeholder={t({ en: 'Write here…', tr: 'Buraya yaz…' })}
+            value={msg}
+            onChange={(e) => setMsg(e.target.value)}
+          />
+          <button className="btn" disabled={state === 'busy'}>
+            {t({ en: 'Send', tr: 'Gönder' })}
+          </button>
+          {state === 'ok' && <div className="notice ok">{t({ en: 'Thanks! Received. 🙏', tr: 'Sağ ol! Ulaştı. 🙏' })}</div>}
+          {state === 'err' && <div className="notice err">{t({ en: 'Could not send — try again.', tr: 'Gönderilemedi — tekrar dene.' })}</div>}
+        </form>
+      )}
+    </>
+  );
+}
+
+// ---------------- Admin panel ----------------
+export function AdminPage() {
+  const t = useT();
+  const user = useUser();
+  const [tab, setTab] = useState('feedback');
+
+  if (!isAdmin(user)) {
+    return <div className="page narrow"><h1>🔒</h1><p>{t({ en: 'Admins only.', tr: 'Sadece yönetici.' })}</p></div>;
+  }
+  return (
+    <div className="page">
+      <h1>⚙️ Admin</h1>
+      <div className="row-btns">
+        <button className={'btn ' + (tab === 'feedback' ? '' : 'ghost')} onClick={() => setTab('feedback')}>
+          💬 Feedback
+        </button>
+        <button className={'btn ' + (tab === 'users' ? '' : 'ghost')} onClick={() => setTab('users')}>
+          👥 {t({ en: 'Users', tr: 'Kullanıcılar' })}
+        </button>
+      </div>
+      {tab === 'feedback' ? <FeedbackInbox /> : <UserStats />}
+    </div>
+  );
+}
+
+function FeedbackInbox() {
+  const t = useT();
+  const [rows, setRows] = useState(null);
+  const [filter, setFilter] = useState('new');
+
+  async function load() {
+    const { data, error } = await supa.from('feedback').select('*').order('created_at', { ascending: false });
+    setRows(error ? [] : data);
+  }
+  useEffect(() => { load(); }, []);
+
+  async function setStatus(id, status) {
+    await supa.from('feedback').update({ status }).eq('id', id);
+    load();
+  }
+  async function remove(id) {
+    await supa.from('feedback').delete().eq('id', id);
+    load();
+  }
+
+  if (!rows) return <p>…</p>;
+  const shown = filter === 'all' ? rows : rows.filter((r) => r.status === filter);
+  const icon = { bug: '🐞', idea: '💡', other: '💬' };
+
+  return (
+    <div>
+      <div className="row-btns">
+        {['new', 'done', 'all'].map((f) => (
+          <button key={f} className={'linklike ' + (filter === f ? 'active-filter' : '')} onClick={() => setFilter(f)}>
+            {f} ({f === 'all' ? rows.length : rows.filter((r) => r.status === f).length})
+          </button>
+        ))}
+      </div>
+      {shown.length === 0 && <p>{t({ en: 'Nothing here.', tr: 'Burada bir şey yok.' })}</p>}
+      {shown.map((r) => (
+        <div key={r.id} className={'rev ' + (r.status === 'done' ? 'ok' : 'fail')}>
+          <b>{icon[r.kind] || '💬'} {r.email}</b>{' '}
+          <small>{new Date(r.created_at).toLocaleString()} · {r.page}</small>
+          <p style={{ whiteSpace: 'pre-wrap', margin: '6px 0' }}>{r.message}</p>
+          <div className="row-btns">
+            {r.status === 'new'
+              ? <button className="linklike" onClick={() => setStatus(r.id, 'done')}>✅ {t({ en: 'Mark done', tr: 'Tamamlandı' })}</button>
+              : <button className="linklike" onClick={() => setStatus(r.id, 'new')}>↩ {t({ en: 'Reopen', tr: 'Geri aç' })}</button>}
+            <button className="linklike" onClick={() => remove(r.id)}>🗑 {t({ en: 'Delete', tr: 'Sil' })}</button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function UserStats() {
+  const t = useT();
+  const [rows, setRows] = useState(null);
+
+  useEffect(() => {
+    supa.from('progress').select('user_id, updated_at, data').order('updated_at', { ascending: false })
+      .then(({ data, error }) => setRows(error ? [] : data));
+  }, []);
+
+  if (!rows) return <p>…</p>;
+
+  const now = Date.now();
+  const week = 7 * 24 * 3600 * 1000;
+  const active7 = rows.filter((r) => now - new Date(r.updated_at).getTime() < week).length;
+  const stats = rows.map((r) => {
+    const d = r.data || {};
+    const passed = Object.keys(d).filter((k) => k.startsWith('exam:') && d[k] && (d[k].s / d[k].t) * 100 >= 60).length;
+    const words = Object.values(d.fc || {}).filter((b) => b >= 3).length;
+    return { id: r.user_id, seen: r.updated_at, passed, words, lang: d.lang || '—' };
+  });
+  const totPassed = stats.reduce((n, s) => n + s.passed, 0);
+
+  return (
+    <div>
+      <div className="stat-row">
+        <div className="stat"><b>{rows.length}</b><span>{t({ en: 'users', tr: 'kullanıcı' })}</span></div>
+        <div className="stat"><b>{active7}</b><span>{t({ en: 'active last 7 days', tr: 'son 7 günde aktif' })}</span></div>
+        <div className="stat"><b>{totPassed}</b><span>{t({ en: 'exams passed (total)', tr: 'geçilen sınav (toplam)' })}</span></div>
+      </div>
+      <table className="gram-table">
+        <thead>
+          <tr>
+            <th>{t({ en: 'User', tr: 'Kullanıcı' })}</th>
+            <th>{t({ en: 'Last seen', tr: 'Son görülme' })}</th>
+            <th>{t({ en: 'Exams passed', tr: 'Geçilen sınav' })}</th>
+            <th>{t({ en: 'Words learned', tr: 'Öğrenilen kelime' })}</th>
+            <th>{t({ en: 'Lang', tr: 'Dil' })}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {stats.map((s) => (
+            <tr key={s.id}>
+              <td><code>{s.id.slice(0, 8)}…</code></td>
+              <td>{new Date(s.seen).toLocaleDateString()}</td>
+              <td>{s.passed}/100</td>
+              <td>{s.words}</td>
+              <td>{s.lang}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p><small>{t({
+        en: 'Emails are not shown here: the progress table stores only user IDs. Feedback rows include the email.',
+        tr: 'Burada e-posta görünmez: progress tablosu sadece kullanıcı ID tutar. Feedback kayıtlarında e-posta var.',
+      })}</small></p>
+    </div>
+  );
+}

@@ -230,6 +230,47 @@ a.card:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(28, 35, 
 }
 .chk { list-style: none; padding: 0; margin: 8px 0; }
 .chk li { margin: 4px 0; }
+
+/* feedback widget + admin */
+.fb-fab {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: none;
+  background: var(--brand);
+  color: #fff;
+  font-size: 22px;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(28, 35, 51, 0.25);
+  z-index: 50;
+}
+.fb-panel {
+  position: fixed;
+  right: 18px;
+  bottom: 80px;
+  width: min(320px, calc(100vw - 36px));
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 10px 30px rgba(28, 35, 51, 0.2);
+  z-index: 50;
+}
+.fb-panel select, .fb-panel textarea {
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+}
+.fb-sub { margin: 0; color: var(--mut); font-size: 13px; }
+.active-filter { font-weight: 800; text-decoration: underline; }
 .notice { background: #eef1f8; border-radius: 10px; padding: 12px 16px; margin: 14px 0; line-height: 1.5; }
 .notice.ok { background: #f0fdf4; }
 .notice.err { background: #fef2f2; color: var(--err); }
