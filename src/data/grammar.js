@@ -463,4 +463,71 @@ export const GRAMMAR = [
       { nl: 'Ik help je graag.', en: 'I am happy to help you.', tr: 'Sana memnuniyetle yardım ederim.' },
     ],
   },
+  {
+    id: 'object-pronouns',
+    title: { en: 'Object pronouns: mij, jou, hem, haar…', tr: 'Nesne zamirleri: mij, jou, hem, haar…' },
+    body: [
+      {
+        en: 'Object pronouns receive the action: "Ik zie hem" (I see him). They also come after prepositions: "voor mij" (for me), "met ons" (with us).',
+        tr: 'Nesne zamirleri eylemi alan kişiyi gösterir: "Ik zie hem" (Onu görüyorum). Edatlardan sonra da kullanılırlar: "voor mij" (benim için), "met ons" (bizimle).',
+      },
+      {
+        en: 'In everyday speech the short forms me, je, ze are very common: "Bel me morgen." For things (not people) Dutch usually avoids "het/hen" after a preposition and uses er + preposition instead: "ermee" (with it) — see the lesson about "er".',
+        tr: 'Günlük konuşmada kısa biçimler me, je, ze çok yaygındır: "Bel me morgen." Eşyalar için edattan sonra "het/hen" yerine er + edat kullanılır: "ermee" (onunla) — "er" dersine bakın.',
+      },
+    ],
+    tables: [
+      {
+        head: [{ en: 'Subject', tr: 'Özne' }, { en: 'Object', tr: 'Nesne' }, { en: 'Example', tr: 'Örnek' }],
+        rows: [
+          ['ik', 'mij / me', 'Zij helpt mij.'],
+          ['jij', 'jou / je', 'Ik zie jou.'],
+          ['u', 'u', 'Ik help u.'],
+          ['hij', 'hem', 'Ik bel hem.'],
+          ['zij (she)', 'haar', 'Ik ken haar.'],
+          ['het', 'het', 'Ik koop het.'],
+          ['wij', 'ons', 'Hij helpt ons.'],
+          ['jullie', 'jullie', 'Ik zie jullie.'],
+          ['zij (they)', 'ze / hen / hun', 'Ik ken ze.'],
+        ],
+      },
+    ],
+    ex: [
+      { nl: 'Kun je mij helpen?', en: 'Can you help me?', tr: 'Bana yardım edebilir misin?' },
+      { nl: 'Ik bel hem vanavond.', en: 'I will call him tonight.', tr: 'Onu bu akşam arayacağım.' },
+      { nl: 'Dit cadeau is voor jou.', en: 'This present is for you.', tr: 'Bu hediye senin için.' },
+      { nl: 'De juf leest ons een verhaal voor.', en: 'The teacher reads us a story.', tr: 'Öğretmen bize bir hikâye okuyor.' },
+      { nl: 'Ik ken ze niet.', en: 'I do not know them.', tr: 'Onları tanımıyorum.' },
+    ],
+  },
+  {
+    id: 'relative-clauses',
+    title: { en: 'Relative clauses: die and dat', tr: 'İlgi cümleleri: die ve dat' },
+    body: [
+      {
+        en: 'To say more about a noun, use die or dat: de man die daar woont (the man who lives there). Use die for de-words and plurals, dat for het-words. Like all subclauses, the verb goes to the end.',
+        tr: 'Bir isim hakkında daha fazla bilgi vermek için die veya dat kullanılır: de man die daar woont (orada oturan adam). De-kelimeleri ve çoğullar için die, het-kelimeleri için dat. Tüm yan cümlelerde olduğu gibi fiil sona gider.',
+      },
+      {
+        en: 'Tip: the choice follows the ARTICLE of the noun, not the meaning: het meisje dat… (because it is "het meisje"), de mensen die… (plural).',
+        tr: 'İpucu: seçim anlamı değil, ismin TANIMLIĞINI takip eder: het meisje dat… (çünkü "het meisje"), de mensen die… (çoğul).',
+      },
+    ],
+    tables: [
+      {
+        head: [{ en: 'Noun', tr: 'İsim' }, { en: 'Pronoun', tr: 'Zamir' }, { en: 'Example', tr: 'Örnek' }],
+        rows: [
+          ['de-word', 'die', 'de bus die te laat komt'],
+          ['het-word', 'dat', 'het huis dat te koop staat'],
+          ['plural', 'die', 'de boeken die ik lees'],
+        ],
+      },
+    ],
+    ex: [
+      { nl: 'De vrouw die naast mij woont, is aardig.', en: 'The woman who lives next to me is kind.', tr: 'Yanımda oturan kadın naziktir.' },
+      { nl: 'Het formulier dat u invult, is belangrijk.', en: 'The form that you fill in is important.', tr: 'Doldurduğunuz form önemlidir.' },
+      { nl: 'Ik zoek een baan die goed betaalt.', en: 'I am looking for a job that pays well.', tr: 'İyi maaş veren bir iş arıyorum.' },
+      { nl: 'Dit is het woord dat ik niet begrijp.', en: 'This is the word that I do not understand.', tr: 'Bu, anlamadığım kelime.' },
+    ],
+  },
 ];

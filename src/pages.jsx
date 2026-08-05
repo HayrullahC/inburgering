@@ -30,8 +30,8 @@ export function Home() {
         <h1>{t({ en: 'Inburgering A2 Course', tr: 'Inburgering A2 Kursu' })}</h1>
         <p>
           {t({
-            en: `Free full preparation for the Dutch civic integration exam: 600 words, complete A2 grammar, ${MODULES.length * EXAM_COUNT} practice exams with audio, and word games. Progress syncs across your devices.`,
-            tr: `Hollanda uyum sınavına ücretsiz tam hazırlık: 600 kelime, eksiksiz A2 grameri, sesli ${MODULES.length * EXAM_COUNT} deneme sınavı ve kelime oyunları. İlerlemen cihazların arasında senkronlanır.`,
+            en: `Free full preparation for the Dutch civic integration exam: ${VOCAB.length} words, complete A2 grammar, ${MODULES.length * EXAM_COUNT} practice exams with audio, and word games. Progress syncs across your devices.`,
+            tr: `Hollanda uyum sınavına ücretsiz tam hazırlık: ${VOCAB.length} kelime, eksiksiz A2 grameri, sesli ${MODULES.length * EXAM_COUNT} deneme sınavı ve kelime oyunları. İlerlemen cihazların arasında senkronlanır.`,
           })}
         </p>
       </div>
@@ -60,7 +60,7 @@ export function Home() {
 
       <h2>{t({ en: 'Quick start', tr: 'Hızlı başlangıç' })}</h2>
       <div className="grid">
-        <Link className="card" to="/vocab"><h3>📚 {t({ en: '600 Words', tr: '600 Kelime' })}</h3><p>{t({ en: 'With pictures, audio and examples', tr: 'Görsel, ses ve örneklerle' })}</p></Link>
+        <Link className="card" to="/vocab"><h3>📚 {t({ en: VOCAB.length + ' Words', tr: VOCAB.length + ' Kelime' })}</h3><p>{t({ en: 'With pictures, audio and examples', tr: 'Görsel, ses ve örneklerle' })}</p></Link>
         <Link className="card" to="/grammar"><h3>🧩 {t({ en: 'Full A2 Grammar', tr: 'Tam A2 Grameri' })}</h3><p>{t({ en: GRAMMAR.length + ' complete lessons', tr: GRAMMAR.length + ' eksiksiz ders' })}</p></Link>
         <Link className="card" to="/games/flashcards"><h3>🃏 {t({ en: 'Flashcards', tr: 'Kelime Kartları' })}</h3><p>{t({ en: 'Smart repetition game', tr: 'Akıllı tekrar oyunu' })}</p></Link>
       </div>
