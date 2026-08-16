@@ -1,20 +1,30 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { speak, getP, setP, shuffle } from './lib.js';
+import { speak, stopSpeak, getP, setP, shuffle } from './lib.js';
 import { useLang, useT } from './App.jsx';
-import { VOCAB } from './data/vocab.js';
+import { vocabFor, grammarFor } from './data/index.js';
+import { VERBS } from './data/verbs.js';
+
+// Every game works on the words of the level the user is currently studying.
+const lw = () => vocabFor(getP('level', 'A2'));
 
 export function GamesHome() {
   const t = useT();
+  const level = getP('level', 'A2');
   const games = [
     { to: '/games/flashcards', icon: '🃏', en: 'Flashcards', tr: 'Kelime Kartları', den: 'Smart repetition: cards you miss come back more often.', dtr: 'Akıllı tekrar: bilemediğin kartlar daha sık gelir.' },
     { to: '/games/match', icon: '🧩', en: 'Match pairs', tr: 'Eşleştirme', den: 'Match Dutch words with their translation.', dtr: 'Hollandaca kelimeyi çevirisiyle eşleştir.' },
     { to: '/games/sprint', icon: '⚡', en: 'Word sprint', tr: 'Kelime Sprinti', den: '60 seconds, as many correct answers as you can.', dtr: '60 saniyede olabildiğince çok doğru.' },
     { to: '/games/spell', icon: '⌨️', en: 'Type the word', tr: 'Kelimeyi Yaz', den: 'See the picture, type the Dutch word.', dtr: 'Görseli gör, Hollandacasını yaz.' },
+    { to: '/games/sentence', icon: '🔤', en: 'Sentence builder', tr: 'Cümle Kurma', den: 'Put the words in the right Dutch order.', dtr: 'Kelimeleri doğru Hollandaca sıraya diz.' },
+    { to: '/games/article', icon: '🚦', en: 'De or het?', tr: 'De mi het mi?', den: 'The fastest way to drill Dutch articles.', dtr: 'Tanımlıkları çalışmanın en hızlı yolu.' },
+    { to: '/games/verbs', icon: '🔀', en: 'Verb forms', tr: 'Fiil Çekimleri', den: 'Irregular past tenses and participles.', dtr: 'Düzensiz geçmiş zaman ve sıfat-fiiller.' },
+    { to: '/games/dictation', icon: '🎧', en: 'Dictation', tr: 'Dikte', den: 'Listen and type exactly what you hear.', dtr: 'Dinle ve duyduğunu birebir yaz.' },
+    { to: '/games/idioms', icon: '💬', en: 'Meaning match', tr: 'Anlam Eşleştirme', den: 'Expressions and difficult words: pick the meaning.', dtr: 'Deyimler ve zor kelimeler: anlamını seç.' },
   ];
   return (
     <div className="page">
-      <h1>🎮 {t({ en: 'Word games', tr: 'Kelime oyunları' })}</h1>
+      <h1>🎮 {t({ en: 'Games', tr: 'Oyunlar' })} <small>{level}</small></h1>
       <div className="grid">
         {games.map((g) => (
           <Link key={g.to} to={g.to} className="card">
@@ -39,7 +49,7 @@ export function Flashcards() {
   useEffect(() => {
     const fc = getP('fc', {});
     // lowest box first, then shuffle within, take 20
-    const sorted = shuffle(VOCAB).sort((a, b) => (fc[a.id] || 0) - (fc[b.id] || 0));
+    const sorted = shuffle(lw()).sort((a, b) => (fc[a.id] || 0) - (fc[b.id] || 0));
     setQueue(sorted.slice(0, 20));
   }, []);
 
@@ -106,7 +116,7 @@ export function MatchGame() {
   const [now, setNow] = useState(Date.now());
 
   function newGame() {
-    const words = shuffle(VOCAB).slice(0, 8);
+    const words = shuffle(lw()).slice(0, 8);
     const ts = shuffle([
       ...words.map((w) => ({ pair: w.id, label: w.nl, key: 'nl' + w.id })),
       ...words.map((w) => ({ pair: w.id, label: lang === 'tr' ? w.tr : w.en, key: 'tr' + w.id })),
@@ -135,7 +145,7 @@ export function MatchGame() {
       m.add(tile.key);
       setMatched(m);
       setSel(null);
-      speak(VOCAB.find((w) => w.id === tile.pair).nl);
+      speak(lw().find((w) => w.id === tile.pair).nl);
     } else {
       setWrong([sel.key, tile.key]);
       setTimeout(() => setWrong(null), 400);
@@ -183,8 +193,8 @@ export function Sprint() {
   const [over, setOver] = useState(false);
 
   function nextQ() {
-    const w = VOCAB[Math.floor(Math.random() * VOCAB.length)];
-    const wrong = shuffle(VOCAB.filter((x) => x.id !== w.id)).slice(0, 3);
+    const w = lw()[Math.floor(Math.random() * lw().length)];
+    const wrong = shuffle(lw().filter((x) => x.id !== w.id)).slice(0, 3);
     setQ({ w, opts: shuffle([w, ...wrong]) });
   }
   useEffect(nextQ, []);
@@ -243,7 +253,7 @@ export function Spell() {
   const lang = useLang();
   const t = useT();
   const [round, setRound] = useState(0);
-  const [w, setW] = useState(() => VOCAB[Math.floor(Math.random() * VOCAB.length)]);
+  const [w, setW] = useState(() => lw()[Math.floor(Math.random() * lw().length)]);
   const [val, setVal] = useState('');
   const [state, setState] = useState(null); // null | 'ok' | 'err'
   const [score, setScore] = useState(0);
@@ -264,7 +274,7 @@ export function Spell() {
     setTimeout(() => {
       setState(null);
       setVal('');
-      setW(VOCAB[Math.floor(Math.random() * VOCAB.length)]);
+      setW(lw()[Math.floor(Math.random() * lw().length)]);
       setRound(round + 1);
       inputRef.current?.focus();
     }, ok ? 900 : 2000);
@@ -299,6 +309,379 @@ export function Spell() {
         />
       </div>
       <button className="btn" style={{ marginTop: 12 }} onClick={check}>OK</button>
+    </div>
+  );
+}
+
+// ---------------- shared helpers for the newer games ----------------
+const norm = (s) =>
+  (s || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+function Score({ score, total, best }) {
+  return (
+    <div className="sprint-head">
+      <span>✅ {score}/{total}</span>
+      {best != null && <span>🏆 {best}</span>}
+    </div>
+  );
+}
+
+// ---------------- Sentence builder (word order) ----------------
+export function Sentence() {
+  const t = useT();
+  const lang = useLang();
+  const level = getP('level', 'A2');
+  const [item, setItem] = useState(null);
+  const [pick, setPick] = useState([]);
+  const [pool, setPool] = useState([]);
+  const [state, setState] = useState(null);
+  const [score, setScore] = useState(0);
+  const [total, setTotal] = useState(0);
+
+  const bank = useMemo(() => {
+    const fromGrammar = grammarFor(level).flatMap((g) =>
+      g.ex.filter((e) => e.nl.split(' ').length >= 4 && e.nl.split(' ').length <= 10)
+        .map((e) => ({ nl: e.nl, en: e.en, tr: e.tr })));
+    const fromWords = lw()
+      .filter((w) => w.ex.split(' ').length >= 4 && w.ex.split(' ').length <= 10)
+      .map((w) => ({ nl: w.ex }));
+    return [...fromGrammar, ...fromWords];
+  }, [level]);
+
+  function nextRound() {
+    const s = bank[Math.floor(Math.random() * bank.length)];
+    setItem(s);
+    setPool(shuffle(s.nl.replace(/\s+/g, ' ').trim().split(' ')));
+    setPick([]);
+    setState(null);
+  }
+  useEffect(() => { if (bank.length) nextRound(); }, [bank]);
+
+  if (!item) return <div className="page">…</div>;
+
+  function check() {
+    const ok = pick.join(' ') === item.nl.replace(/\s+/g, ' ').trim();
+    setState(ok ? 'ok' : 'err');
+    setTotal(total + 1);
+    if (ok) { setScore(score + 1); speak(item.nl); }
+  }
+
+  return (
+    <div className="page narrow">
+      <Link to="/games">← {t({ en: 'Games', tr: 'Oyunlar' })}</Link>
+      <h1>🔤 {t({ en: 'Sentence builder', tr: 'Cümle Kurma' })}</h1>
+      <Score score={score} total={total} />
+      <p>{t({ en: 'Tap the words in the correct order.', tr: 'Kelimelere doğru sırayla dokun.' })}</p>
+      {(item.en || item.tr) && <p className="fc-hint">{lang === 'tr' ? item.tr : item.en}</p>}
+
+      <div className={'build-line ' + (state || '')}>
+        {pick.length === 0 ? <span className="fc-hint">…</span> : pick.map((w, i) => (
+          <button key={i} className="chip" onClick={() => !state && setPick(pick.filter((_, j) => j !== i))}>{w}</button>
+        ))}
+      </div>
+
+      <div className="chip-pool">
+        {pool.map((w, i) => (
+          <button
+            key={i}
+            className="chip"
+            disabled={!!state || pick.filter((x) => x === w).length >= pool.filter((x) => x === w).length}
+            onClick={() => setPick([...pick, w])}
+          >
+            {w}
+          </button>
+        ))}
+      </div>
+
+      {!state ? (
+        <button className="btn" disabled={pick.length !== pool.length} onClick={check}>
+          {t({ en: 'Check', tr: 'Kontrol et' })}
+        </button>
+      ) : (
+        <div>
+          <div className={'notice ' + (state === 'ok' ? 'ok' : 'err')}>
+            {state === 'ok'
+              ? '✔ ' + t({ en: 'Correct!', tr: 'Doğru!' })
+              : '✘ ' + item.nl}
+          </div>
+          <button className="btn" onClick={nextRound}>{t({ en: 'Next', tr: 'Sonraki' })} →</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ---------------- De or het ----------------
+export function Article() {
+  const t = useT();
+  const lang = useLang();
+  const level = getP('level', 'A2');
+  const nouns = useMemo(() => lw().filter((w) => /^(de|het) \S+$/i.test(w.nl)), [level]);
+  const [w, setW] = useState(null);
+  const [state, setState] = useState(null);
+  const [score, setScore] = useState(0);
+  const [total, setTotal] = useState(0);
+  const best = getP('hs:article', 0);
+
+  const next = () => { setW(nouns[Math.floor(Math.random() * nouns.length)]); setState(null); };
+  useEffect(() => { if (nouns.length) next(); }, [nouns]);
+
+  if (!w) return <div className="page">…</div>;
+  const correct = w.nl.split(' ')[0].toLowerCase();
+
+  function answer(a) {
+    if (state) return;
+    const ok = a === correct;
+    setState(ok ? 'ok' : 'err');
+    setTotal(total + 1);
+    if (ok) {
+      const s = score + 1;
+      setScore(s);
+      if (s > best) setP('hs:article', s);
+      speak(w.nl);
+    } else {
+      setScore(0);
+    }
+    setTimeout(next, ok ? 500 : 1600);
+  }
+
+  return (
+    <div className="page narrow" style={{ textAlign: 'center' }}>
+      <Link to="/games">← {t({ en: 'Games', tr: 'Oyunlar' })}</Link>
+      <h1>🚦 {t({ en: 'De or het?', tr: 'De mi het mi?' })}</h1>
+      <div className="sprint-head">
+        <span>🔥 {score}</span>
+        <span>{total} {t({ en: 'played', tr: 'soru' })}</span>
+        <span>🏆 {best}</span>
+      </div>
+      <div className="fc-card" style={{ minHeight: 180 }}>
+        <div className="fc-emoji">{w.emoji}</div>
+        <div className="fc-word">{w.nl.replace(/^(de|het) /i, '')}</div>
+        <div className="fc-hint">{lang === 'tr' ? w.tr : w.en}</div>
+        {state && (
+          <div className={state === 'ok' ? 'art-ok' : 'art-err'}>
+            {state === 'ok' ? '✔' : '✘ ' + w.nl}
+          </div>
+        )}
+      </div>
+      <div className="art-btns">
+        <button className="btn big" onClick={() => answer('de')}>de</button>
+        <button className="btn big ghost" onClick={() => answer('het')}>het</button>
+      </div>
+      <p><small>{t({ en: 'About two thirds of Dutch nouns take "de".', tr: 'Hollandaca isimlerin yaklaşık üçte ikisi "de" alır.' })}</small></p>
+    </div>
+  );
+}
+
+// ---------------- Verb forms ----------------
+export function VerbGame() {
+  const t = useT();
+  const lang = useLang();
+  const level = getP('level', 'A2');
+  // verbs are cumulative: at B2 you still need the A2 irregulars
+  const pool = useMemo(() => {
+    const upto = { A2: ['A2'], B1: ['A2', 'B1'], B2: ['A2', 'B1', 'B2'] }[level] || ['A2'];
+    return VERBS.filter((v) => upto.includes(v.level) && v.part !== '—');
+  }, [level]);
+  const [q, setQ] = useState(null);
+  const [sel, setSel] = useState(null);
+  const [score, setScore] = useState(0);
+  const [total, setTotal] = useState(0);
+
+  function next() {
+    const v = pool[Math.floor(Math.random() * pool.length)];
+    const field = Math.random() < 0.5 ? 'imp' : 'part';
+    const wrongs = shuffle(pool.filter((x) => x.inf !== v.inf && x[field] !== v[field]))
+      .slice(0, 3)
+      .map((x) => x[field]);
+    setQ({ v, field, options: shuffle([v[field], ...wrongs]) });
+    setSel(null);
+  }
+  useEffect(() => { if (pool.length) next(); }, [pool]);
+
+  if (!q) return <div className="page">…</div>;
+  const correct = q.v[q.field];
+
+  function answer(o) {
+    if (sel) return;
+    setSel(o);
+    setTotal(total + 1);
+    if (o === correct) {
+      setScore(score + 1);
+      speak(q.field === 'imp' ? correct : `${q.v.aux === 'zijn' ? 'is' : 'heeft'} ${correct}`);
+    }
+  }
+
+  return (
+    <div className="page narrow">
+      <Link to="/games">← {t({ en: 'Games', tr: 'Oyunlar' })}</Link>
+      <h1>🔀 {t({ en: 'Verb forms', tr: 'Fiil Çekimleri' })}</h1>
+      <Score score={score} total={total} />
+      <div className="fc-card" style={{ minHeight: 150 }}>
+        <div className="fc-word">{q.v.inf}</div>
+        <div className="fc-hint">{lang === 'tr' ? q.v.tr : q.v.en}</div>
+        <div className="verb-ask">
+          {q.field === 'imp'
+            ? t({ en: 'simple past (imperfectum): ik …', tr: 'geçmiş zaman (imperfectum): ik …' })
+            : t({ en: `past participle: ik ${q.v.aux === 'zijn' ? 'ben' : 'heb'} …`, tr: `sıfat-fiil (participium): ik ${q.v.aux === 'zijn' ? 'ben' : 'heb'} …` })}
+        </div>
+      </div>
+      <div className="opts">
+        {q.options.map((o) => (
+          <button
+            key={o}
+            className={'opt' + (sel ? (o === correct ? ' good-opt' : o === sel ? ' bad-opt' : '') : '')}
+            onClick={() => answer(o)}
+          >
+            {o}
+          </button>
+        ))}
+      </div>
+      {sel && (
+        <div>
+          <div className="notice">
+            {q.v.inf} — {q.v.imp} / {q.v.impPl} — {q.v.aux === 'zijn' ? 'is' : 'heeft'} {q.v.part}
+          </div>
+          <button className="btn" onClick={next}>{t({ en: 'Next', tr: 'Sonraki' })} →</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ---------------- Dictation ----------------
+export function Dictation() {
+  const t = useT();
+  const level = getP('level', 'A2');
+  const bank = useMemo(() => {
+    const g = grammarFor(level).flatMap((x) => x.ex.map((e) => e.nl));
+    const v = lw().map((w) => w.ex);
+    return [...g, ...v].filter((s) => s.split(' ').length >= 4);
+  }, [level]);
+  const [s, setS] = useState('');
+  const [val, setVal] = useState('');
+  const [state, setState] = useState(null);
+  const [score, setScore] = useState(0);
+  const [total, setTotal] = useState(0);
+  const ref = useRef(null);
+
+  function next() {
+    const pickOne = bank[Math.floor(Math.random() * bank.length)];
+    setS(pickOne);
+    setVal('');
+    setState(null);
+    setTimeout(() => { speak(pickOne, 0.85); ref.current?.focus(); }, 200);
+  }
+  useEffect(() => { if (bank.length) next(); return stopSpeak; }, [bank]);
+
+  function check() {
+    if (state) return;
+    const ok = norm(val) === norm(s);
+    setState(ok ? 'ok' : 'err');
+    setTotal(total + 1);
+    if (ok) setScore(score + 1);
+  }
+
+  return (
+    <div className="page narrow" style={{ textAlign: 'center' }}>
+      <Link to="/games">← {t({ en: 'Games', tr: 'Oyunlar' })}</Link>
+      <h1>🎧 {t({ en: 'Dictation', tr: 'Dikte' })}</h1>
+      <Score score={score} total={total} />
+      <p>{t({ en: 'Listen and type the sentence. Spelling counts, punctuation does not.', tr: 'Dinle ve cümleyi yaz. Yazım önemli, noktalama değil.' })}</p>
+      <div className="row-btns" style={{ justifyContent: 'center' }}>
+        <button className="btn big" onClick={() => speak(s, 0.85)}>▶ {t({ en: 'Play', tr: 'Çal' })}</button>
+        <button className="btn ghost" onClick={() => speak(s, 0.6)}>🐢 {t({ en: 'Slower', tr: 'Yavaş' })}</button>
+      </div>
+      <textarea
+        ref={ref}
+        className={'write-area dictee ' + (state || '')}
+        rows={3}
+        value={val}
+        onChange={(e) => setVal(e.target.value)}
+        onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); state ? next() : check(); } }}
+        placeholder={t({ en: 'Type what you hear…', tr: 'Duyduğunu yaz…' })}
+      />
+      {!state ? (
+        <button className="btn" disabled={!val.trim()} onClick={check}>{t({ en: 'Check', tr: 'Kontrol et' })}</button>
+      ) : (
+        <div>
+          <div className={'notice ' + (state === 'ok' ? 'ok' : 'err')}>
+            {state === 'ok' ? '✔ ' + t({ en: 'Exactly right!', tr: 'Tam doğru!' }) : '✘ ' + s}
+          </div>
+          <button className="btn" onClick={next}>{t({ en: 'Next', tr: 'Sonraki' })} →</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ---------------- Meaning match (idioms & hard words) ----------------
+export function Idioms() {
+  const t = useT();
+  const lang = useLang();
+  const level = getP('level', 'A2');
+  const pool = useMemo(() => {
+    const words = lw();
+    const focus = words.filter((w) => ['idioms', 'social', 'connectors', 'abstract', 'academic'].includes(w.cat));
+    return focus.length >= 8 ? focus : words;
+  }, [level]);
+  const [q, setQ] = useState(null);
+  const [sel, setSel] = useState(null);
+  const [score, setScore] = useState(0);
+  const [total, setTotal] = useState(0);
+
+  const meaning = (w) => (lang === 'tr' ? w.tr : w.en);
+
+  function next() {
+    const w = pool[Math.floor(Math.random() * pool.length)];
+    const wrongs = shuffle(pool.filter((x) => x.id !== w.id)).slice(0, 3);
+    setQ({ w, options: shuffle([w, ...wrongs]) });
+    setSel(null);
+  }
+  useEffect(() => { if (pool.length) next(); }, [pool]);
+
+  if (!q) return <div className="page">…</div>;
+
+  function answer(o) {
+    if (sel) return;
+    setSel(o);
+    setTotal(total + 1);
+    if (o.id === q.w.id) setScore(score + 1);
+    speak(q.w.nl);
+  }
+
+  return (
+    <div className="page narrow">
+      <Link to="/games">← {t({ en: 'Games', tr: 'Oyunlar' })}</Link>
+      <h1>💬 {t({ en: 'Meaning match', tr: 'Anlam Eşleştirme' })}</h1>
+      <Score score={score} total={total} />
+      <div className="fc-card" style={{ minHeight: 140 }}>
+        <div className="fc-emoji">{q.w.emoji}</div>
+        <div className="fc-word">{q.w.nl}</div>
+      </div>
+      <div className="opts">
+        {q.options.map((o) => (
+          <button
+            key={o.id}
+            className={'opt' + (sel ? (o.id === q.w.id ? ' good-opt' : o.id === sel.id ? ' bad-opt' : '') : '')}
+            onClick={() => answer(o)}
+          >
+            {meaning(o)}
+          </button>
+        ))}
+      </div>
+      {sel && (
+        <div>
+          <div className="notice"><i>{q.w.ex}</i> <button className="spk" onClick={() => speak(q.w.ex)}>🔊</button></div>
+          <button className="btn" onClick={next}>{t({ en: 'Next', tr: 'Sonraki' })} →</button>
+        </div>
+      )}
     </div>
   );
 }

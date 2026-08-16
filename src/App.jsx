@@ -1,10 +1,10 @@
 import React, { createContext, useContext, useEffect, useState, useSyncExternalStore } from 'react';
 import { Routes, Route, NavLink, Link, useNavigate } from 'react-router-dom';
-import { supa, subscribe, getAll, getP, setP, onLogin, onLogout } from './lib.js';
+import { supa, subscribe, getAll, getP, setP, onLogin, onLogout, LEVELS } from './lib.js';
 import {
-  Home, Vocab, Grammar, GrammarTopic, Exams, ExamList, ExamRunner, Auth, ResetPassword, Info,
+  Home, Vocab, Grammar, GrammarTopic, Exams, ExamList, ExamRunner, Auth, ResetPassword, Info, Placement,
 } from './pages.jsx';
-import { GamesHome, Flashcards, MatchGame, Sprint, Spell } from './games.jsx';
+import { GamesHome, Flashcards, MatchGame, Sprint, Spell, Sentence, Article, VerbGame, Dictation, Idioms } from './games.jsx';
 import { AdminPage, FeedbackWidget, isAdmin } from './admin.jsx';
 
 // ---------- i18n ----------
@@ -43,6 +43,7 @@ const RECOVERY_AT_LOAD =
 export default function App() {
   useSyncExternalStore(subscribe, getAll); // re-render on any progress change
   const lang = getP('lang', 'en');
+  const level = getP('level', 'A2');
   const [user, setUser] = useState(null);
   const [ready, setReady] = useState(!supa); // wait for session check before deciding locked/unlocked
   const nav = useNavigate();
@@ -72,7 +73,20 @@ export default function App() {
     <LangCtx.Provider value={lang}>
       <UserCtx.Provider value={user}>
         <header className="topbar">
-          <Link to="/" className="brand">🇳🇱 Inburgering A2</Link>
+          <Link to="/" className="brand">🇳🇱 Nederlands</Link>
+          {!locked && (
+            <div className="lvl-switch" title="A2 · B1 · B2">
+              {LEVELS.map((l) => (
+                <button
+                  key={l.id}
+                  className={'lvl' + (l.id === level ? ' on' : '')}
+                  onClick={() => { setP('level', l.id); nav('/'); }}
+                >
+                  {l.id}
+                </button>
+              ))}
+            </div>
+          )}
           {!locked && <nav>
             <NavLink to="/">{t('home')}</NavLink>
             <NavLink to="/vocab">{t('vocab')}</NavLink>
@@ -115,9 +129,15 @@ export default function App() {
             <Route path="/games/match" element={<MatchGame />} />
             <Route path="/games/sprint" element={<Sprint />} />
             <Route path="/games/spell" element={<Spell />} />
+            <Route path="/games/sentence" element={<Sentence />} />
+            <Route path="/games/article" element={<Article />} />
+            <Route path="/games/verbs" element={<VerbGame />} />
+            <Route path="/games/dictation" element={<Dictation />} />
+            <Route path="/games/idioms" element={<Idioms />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset" element={<ResetPassword />} />
             <Route path="/info" element={<Info />} />
+            <Route path="/placement" element={<Placement />} />
             <Route path="/admin" element={<AdminPage />} />
           </Routes>
           )}

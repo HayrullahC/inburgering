@@ -1,13 +1,18 @@
-// Exam generator: builds src/data/exams/*.json (5 modules x 20 exams x 25 questions).
-// Deterministic (seeded) so regeneration is stable. Run: npm run gen
+// Exam generator: builds src/data/exams/<level>/<module>.json for A2, B1 and B2.
+// A2 questions are generated from templates + the vocabulary; B1/B2 come from the
+// authored banks in scripts/banks/. Deterministic (seeded) so regeneration is stable.
+// Run: npm run gen
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { VOCAB } from '../src/data/vocab.js';
 import { KNM } from '../src/data/knm.js';
+import * as B1RL from './banks/b1-rl.mjs';
+import * as B1WS from './banks/b1-ws.mjs';
+import * as B2RL from './banks/b2-rl.mjs';
+import * as B2WS from './banks/b2-ws.mjs';
 
 const OUT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'src', 'data', 'exams');
-const EXAMS = 50;
 const QUESTIONS = 25;
 
 // ---------- seeded rng ----------
@@ -515,29 +520,143 @@ function makeKnm(rnd, examIdx) {
   return qs;
 }
 
+// ---------- B1 / B2: build from the authored source banks ----------
+// Passages and listening scripts are stored once per module file and referenced by
+// index (pi = visible passage, li = spoken script) — keeps the JSON small.
+function makePool() {
+  const texts = [];
+  const seen = new Map();
+  return {
+    texts,
+    add(t) {
+      if (seen.has(t)) return seen.get(t);
+      seen.set(t, texts.length);
+      texts.push(t);
+      return texts.length - 1;
+    },
+  };
+}
+
+// A2 builders emit inline p/l; move those into the pool.
+function poolInline(qs, pool) {
+  return qs.map((q) => {
+    if (q.t === 'sp') return q; // speaking prompts stay inline: short and unique
+    const out = { ...q };
+    if (out.p != null) { out.pi = pool.add(out.p); delete out.p; }
+    if (out.l != null) { out.li = pool.add(out.l); delete out.l; }
+    return out;
+  });
+}
+
+function reshuffle(rnd, base, extra) {
+  const wrongs = base.o.filter((_, j) => j !== base.a);
+  return fin(rnd, { q: base.q, ...extra }, base.o[base.a], wrongs);
+}
+
+function makeBankRead(rnd, examIdx, bank, pool, field) {
+  if (!bank?.length) throw new Error('empty source bank — did scripts/banks/*.mjs finish?');
+  const qs = [];
+  let ti = examIdx * 3;
+  while (qs.length < QUESTIONS) {
+    const t = bank[ti % bank.length];
+    const body = t.title ? `${t.title}\n\n${t.text}` : t.text || t.script;
+    const ref = field === 'pi' ? { pi: pool.add(body) } : { li: pool.add(body) };
+    for (const bq of shuffleS(rnd, t.qs)) {
+      if (qs.length >= QUESTIONS) break;
+      qs.push(reshuffle(rnd, bq, ref));
+    }
+    ti++;
+  }
+  return qs;
+}
+
+function cycle(arr, examIdx, offset, count) {
+  const out = [];
+  for (let i = 0; i < count; i++) out.push({ ...arr[(examIdx * 3 + offset + i) % arr.length] });
+  return out;
+}
+
+function makeBankSchrijven(_rnd, examIdx, bank) {
+  const zin = bank.filter((x) => x.t === 'zin');
+  const msg = bank.filter((x) => x.t === 'msg');
+  const open = bank.filter((x) => x.t === 'open');
+  return [
+    ...cycle(zin, examIdx, 0, 15),
+    ...cycle(msg, examIdx, 0, 8),
+    ...cycle(open, examIdx, 0, 2),
+  ].slice(0, QUESTIONS);
+}
+
+function makeBankSpreken(_rnd, examIdx, bank) {
+  const short = bank.filter((x) => x.sec === 20);
+  const med = bank.filter((x) => x.sec === 30);
+  const long = bank.filter((x) => x.sec === 120);
+  const nLong = long.length ? 2 : 0;
+  const nShort = Math.ceil((QUESTIONS - nLong) / 2);
+  const nMed = QUESTIONS - nLong - nShort;
+  return [
+    ...cycle(short, examIdx, 0, nShort),
+    ...cycle(med, examIdx, 0, nMed),
+    ...(nLong ? cycle(long, examIdx, 0, nLong) : []),
+  ].slice(0, QUESTIONS);
+}
+
 // ---------- build ----------
-const builders = {
-  lezen: (rnd) => makeFromTemplates(rnd, LEZEN_TEMPLATES),
-  luisteren: (rnd) => makeFromTemplates(rnd, LUISTEREN_TEMPLATES),
-  schrijven: makeSchrijven,
-  spreken: makeSpreken,
+const BUILDERS = {
+  A2: {
+    exams: 50,
+    lezen: (rnd) => makeFromTemplates(rnd, LEZEN_TEMPLATES),
+    luisteren: (rnd) => makeFromTemplates(rnd, LUISTEREN_TEMPLATES),
+    schrijven: makeSchrijven,
+    spreken: makeSpreken,
+    knm: (rnd, e) => makeKnm(rnd, e),
+  },
+  B1: {
+    exams: 40,
+    lezen: (rnd, e, pool) => makeBankRead(rnd, e, B1RL.LEZEN, pool, 'pi'),
+    luisteren: (rnd, e, pool) => makeBankRead(rnd, e, B1RL.LUISTEREN, pool, 'li'),
+    schrijven: (rnd, e) => makeBankSchrijven(rnd, e, B1WS.SCHRIJVEN),
+    spreken: (rnd, e) => makeBankSpreken(rnd, e, B1WS.SPREKEN),
+    knm: (rnd, e) => makeKnm(rnd, e + 500),
+  },
+  B2: {
+    exams: 30,
+    lezen: (rnd, e, pool) => makeBankRead(rnd, e, B2RL.LEZEN, pool, 'pi'),
+    luisteren: (rnd, e, pool) => makeBankRead(rnd, e, B2RL.LUISTEREN, pool, 'li'),
+    schrijven: (rnd, e) => makeBankSchrijven(rnd, e, B2WS.SCHRIJVEN),
+    spreken: (rnd, e) => makeBankSpreken(rnd, e, B2WS.SPREKEN),
+  },
 };
 
-fs.mkdirSync(OUT, { recursive: true });
-for (const mod of ['lezen', 'luisteren', 'schrijven', 'spreken', 'knm']) {
-  const exams = [];
-  for (let e = 0; e < EXAMS; e++) {
-    const rnd = mulberry32(e * 1000 + mod.length * 77 + 1);
-    const qs = mod === 'knm' ? makeKnm(rnd, e) : builders[mod](rnd);
-    // sanity: MCQ modules need 4 options + valid answer; open modules need a type + model
-    const open = mod === 'schrijven' || mod === 'spreken';
-    for (const q of qs) {
-      const bad = open ? !q.t || !q.model : !q.o || q.o.length !== 4 || q.a < 0 || q.a > 3;
-      if (bad) throw new Error(`Bad question in ${mod} exam ${e + 1}: ${JSON.stringify(q)}`);
-    }
-    exams.push(qs);
-  }
-  fs.writeFileSync(path.join(OUT, mod + '.json'), JSON.stringify(exams));
-  console.log(`${mod}: ${exams.length} exams x ${exams[0].length} questions`);
+// drop the old flat A2 files from before levels existed
+for (const f of fs.existsSync(OUT) ? fs.readdirSync(OUT) : []) {
+  if (f.endsWith('.json')) fs.rmSync(path.join(OUT, f));
 }
-console.log('Done.');
+
+let totalQ = 0;
+for (const [level, cfg] of Object.entries(BUILDERS)) {
+  const dir = path.join(OUT, level);
+  fs.mkdirSync(dir, { recursive: true });
+  const mods = Object.keys(cfg).filter((k) => k !== 'exams');
+  for (const mod of mods) {
+    const pool = makePool();
+    const exams = [];
+    for (let e = 0; e < cfg.exams; e++) {
+      const rnd = mulberry32(e * 1000 + mod.length * 77 + level.charCodeAt(1) * 13 + 1);
+      const qs = poolInline(cfg[mod](rnd, e, pool), pool);
+      const open = mod === 'schrijven' || mod === 'spreken';
+      for (const q of qs) {
+        const bad = open
+          ? !q.t || !q.model
+          : !q.o || q.o.length < 3 || q.a < 0 || q.a >= q.o.length;
+        if (bad) throw new Error(`Bad question in ${level}/${mod} exam ${e + 1}: ${JSON.stringify(q)}`);
+      }
+      exams.push(qs);
+    }
+    fs.writeFileSync(path.join(dir, mod + '.json'), JSON.stringify({ texts: pool.texts, exams }));
+    totalQ += exams.length * exams[0].length;
+    console.log(`${level}/${mod}: ${exams.length} exams x ${exams[0].length} questions` +
+      (pool.texts.length ? ` (${pool.texts.length} texts)` : ''));
+  }
+}
+console.log(`Done. ${totalQ} questions total.`);

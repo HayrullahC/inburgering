@@ -175,4 +175,49 @@ export const MODULES = [
 ];
 
 export const PASS_PCT = 60; // indicative pass mark shown to the user
-export const EXAM_COUNT = 50; // exams per module (keep in sync with scripts/gen-exams.mjs)
+
+// The three courses. `exams` must stay in sync with scripts/gen-exams.mjs.
+// B2 (Staatsexamen NT2 Programma II) has no KNM module — that is inburgering only.
+export const LEVELS = [
+  {
+    id: 'A2',
+    exams: 50,
+    modules: ['lezen', 'luisteren', 'schrijven', 'spreken', 'knm'],
+    exam: { en: 'Inburgeringsexamen A2', tr: 'Inburgering sınavı A2' },
+    goal: {
+      en: 'The civic integration exam. Enough Dutch for everyday life: shops, doctor, school, the municipality.',
+      tr: 'Uyum sınavı. Günlük hayat için yeterli Hollandaca: alışveriş, doktor, okul, belediye.',
+    },
+  },
+  {
+    id: 'B1',
+    exams: 40,
+    modules: ['lezen', 'luisteren', 'schrijven', 'spreken', 'knm'],
+    exam: { en: 'Inburgering B1-route / Staatsexamen NT2 I', tr: 'Inburgering B1 rotası / Staatsexamen NT2 I' },
+    goal: {
+      en: 'The standard route under the 2021 integration law, and the level for work or an mbo course.',
+      tr: '2021 uyum yasasının standart rotası; iş veya mbo eğitimi için gereken seviye.',
+    },
+  },
+  {
+    id: 'B2',
+    exams: 30,
+    modules: ['lezen', 'luisteren', 'schrijven', 'spreken'],
+    exam: { en: 'Staatsexamen NT2 Programma II', tr: 'Staatsexamen NT2 Programma II' },
+    goal: {
+      en: 'The level universities and hbo programmes ask for: abstract texts, argument and nuance.',
+      tr: 'Üniversite ve hbo programlarının istediği seviye: soyut metinler, argüman ve nüans.',
+    },
+  },
+];
+
+export const getLevel = (id) => LEVELS.find((l) => l.id === id) || LEVELS[0];
+export const levelModules = (id) => getLevel(id).modules.map((m) => MODULES.find((x) => x.id === m));
+export const examCount = (id) => getLevel(id).exams;
+
+// A2 keys keep their original shape so existing progress is never lost.
+export const examKey = (level, mod, n) => (level === 'A2' ? `exam:${mod}:${n}` : `exam:${level}:${mod}:${n}`);
+
+export function activeLevel() {
+  return getP('level', 'A2');
+}

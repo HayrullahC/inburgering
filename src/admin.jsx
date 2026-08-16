@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { supa, MODULES, EXAM_COUNT } from './lib.js';
+import { supa, LEVELS } from './lib.js';
+
+// every exam in the app, across all three levels
+const TOTAL_EXAMS = LEVELS.reduce((n, l) => n + l.modules.length * l.exams, 0);
 import { ADMIN_EMAILS } from './config.js';
 import { useT, useUser } from './App.jsx';
 
@@ -200,7 +203,7 @@ function UserStats() {
             <tr key={s.id}>
               <td>{s.email || <code>{s.id.slice(0, 8)}…</code>}</td>
               <td>{new Date(s.seen).toLocaleDateString()}</td>
-              <td>{s.passed}/{MODULES.length * EXAM_COUNT}</td>
+              <td>{s.passed}/{TOTAL_EXAMS}</td>
               <td>{s.words}</td>
               <td>{s.lang}</td>
               <td>

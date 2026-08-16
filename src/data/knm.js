@@ -125,5 +125,148 @@ export const KNM = [
   { q: 'Wat kan er gebeuren als je niet op tijd inburgert?', o: ['Je kunt een boete krijgen', 'Niets', 'Je krijgt een cadeau', 'Je krijgt meer tijd, altijd'], a: 0 },
   { q: 'Wat is naturalisatie?', o: ['Nederlander worden', 'Een huis kopen', 'Een baan vinden', 'Een taalcursus'], a: 0 },
   { q: 'Welke taal spreek je bij officiële instanties in Nederland?', o: ['Nederlands', 'Engels', 'Duits', 'Frans'], a: 0 },
+
+  // --- Politiek & democratie ---
+  { q: 'Hoeveel leden heeft de Tweede Kamer?', o: ['75', '150', '100', '200'], a: 1 },
+  { q: 'Hoeveel leden heeft de Eerste Kamer?', o: ['150', '100', '75', '50'], a: 2 },
+  { q: 'Hoe vaak zijn er normaal verkiezingen voor de Tweede Kamer?', o: ['Elk jaar', 'Elke twee jaar', 'Elke tien jaar', 'Meestal elke vier jaar'], a: 3 },
+  { q: 'Wie vormen samen het dagelijks bestuur van een gemeente?', o: ['De burgemeester en de wethouders', 'De koning en de ministers', 'De rechters', 'De medewerkers van de IND'], a: 0 },
+  { q: 'Waar gaat een provincie onder andere over?', o: ['De zorgverzekering', 'Wegen, natuur en openbaar vervoer in de regio', 'Het maken van paspoorten', 'Het leger'], a: 1 },
+  { q: 'Wat doet een waterschap?', o: ['Scholen bouwen', 'Uitkeringen betalen', 'Zorgen voor dijken, het waterpeil en schoon water', 'Paspoorten maken'], a: 2 },
+  { q: 'Wat is het verschil tussen de koning en de minister-president?', o: ['De koning maakt in zijn eentje de wetten', 'De minister-president is het staatshoofd', 'Zij hebben precies dezelfde taak', 'De koning is staatshoofd; de minister-president leidt de regering'], a: 3 },
+  { q: 'Wat is een coalitie?', o: ['Partijen die samen een regering vormen', 'Een groep ambtenaren', 'Een vereniging van werkgevers', 'Een vergadering van de gemeente'], a: 0 },
+  { q: 'Hoe breng je je stem uit bij verkiezingen?', o: ['Je stemt via de telefoon', 'Met je stempas en je identiteitsbewijs in het stemlokaal', 'Je stuurt een e-mail naar de gemeente', 'Je geeft je stem door bij de politie'], a: 1 },
+
+  // --- Grondrechten & gelijkheid ---
+  { q: 'Wat betekent vrijheid van meningsuiting?', o: ['Je mag alles zeggen, ook oproepen tot geweld', 'Alleen de regering mag haar mening geven', 'Je mag je mening geven, maar discrimineren en aanzetten tot haat mag niet', 'Je mag je mening alleen thuis geven'], a: 2 },
+  { q: 'Mag je in Nederland demonstreren?', o: ['Nee, dat is verboden', 'Alleen met toestemming van de koning', 'Alleen op zondag', 'Ja, dat mag; je meldt het meestal wel bij de gemeente'], a: 3 },
+  { q: 'Mag een werkgever iemand afwijzen vanwege zijn huidskleur?', o: ['Nee, dat is discriminatie en dat is verboden', 'Ja, een werkgever mag zelf kiezen', 'Alleen bij een klein bedrijf', 'Alleen bij tijdelijk werk'], a: 0 },
+  { q: 'Wat kun je doen als je wordt gediscrimineerd?', o: ['Niets, want het is niet strafbaar', 'Het melden bij een antidiscriminatiebureau of aangifte doen bij de politie', 'Zelf de dader straffen', 'Verhuizen naar een andere gemeente'], a: 1 },
+  { q: 'Een collega vertelt op het werk dat hij homoseksueel is. Wat is de regel in Nederland?', o: ['Hij mag daarom ontslagen worden', 'Hij moet dat geheimhouden', 'Hij heeft dezelfde rechten en mag niet gediscrimineerd worden', 'Hij moet dat melden bij de gemeente'], a: 2 },
+  { q: 'Mag een man zijn vrouw verbieden om te werken?', o: ['Ja, als hij dat wil', 'Alleen als er kinderen zijn', 'Alleen als zij getrouwd zijn', 'Nee, vrouwen beslissen zelf over hun werk'], a: 3 },
+  { q: 'Mag je in Nederland van geloof veranderen of geen geloof hebben?', o: ['Ja, iedereen kiest dat zelf', 'Nee, dat is verboden', 'Alleen met toestemming van de gemeente', 'Alleen als je jonger bent dan 18 jaar'], a: 0 },
+  { q: 'Wie bepaalt in Nederland met wie je trouwt?', o: ['Je ouders bepalen dat', 'Je bepaalt dat zelf; een gedwongen huwelijk is verboden', 'Alleen de man bepaalt dat', 'De gemeente bepaalt dat'], a: 1 },
+
+  // --- Geschiedenis & nationale symbolen ---
+  { q: 'Welke kleuren heeft de Nederlandse vlag?', o: ['Rood, geel en zwart', 'Blauw, wit en rood van boven naar beneden', 'Rood, wit en blauw van boven naar beneden', 'Oranje, wit en groen'], a: 2 },
+  { q: 'Welke kleur hoort bij het Nederlandse koningshuis?', o: ['Groen', 'Paars', 'Bruin', 'Oranje'], a: 3 },
+  { q: 'Wanneer werd Nederland bezet in de Tweede Wereldoorlog?', o: ['In 1940, door Duitsland', 'In 1914', 'In 1953', 'In 1975'], a: 0 },
+  { q: 'Wat doen veel mensen op 4 mei om acht uur ’s avonds?', o: ['Vuurwerk afsteken', 'Twee minuten stil zijn', 'Een optocht houden', 'De vlag binnenhalen en feestvieren'], a: 1 },
+  { q: 'Wat gebeurde er in 1953 in het zuidwesten van Nederland?', o: ['Er was een grote brand', 'Er kwam een nieuwe provincie bij', 'Er was een grote overstroming: de watersnoodramp', 'Er kwam een nieuwe koning'], a: 2 },
+  { q: 'Wat zijn de Deltawerken?', o: ['Een groot museum', 'Een spoorlijn door het hele land', 'Een reeks fabrieken bij de haven', 'Dammen en keringen die Nederland tegen de zee beschermen'], a: 3 },
+  { q: 'Wat was de VOC?', o: ['Een Nederlandse handelsonderneming uit de 17e eeuw', 'Een politieke partij', 'Een ziekenhuis in Amsterdam', 'Een school voor zeelieden'], a: 0 },
+  { q: 'Wat is typisch voor Koningsdag?', o: ['Iedereen moet gewoon werken', 'Feest, oranje kleding en vrijmarkten', 'Een dag zonder eten en drinken', 'Een verplichte optocht van de gemeente'], a: 1 },
+
+  // --- Geografie & water ---
+  { q: 'Wat is de hoofdstad van de provincie Noord-Holland?', o: ['Amsterdam', 'Alkmaar', 'Haarlem', 'Hoorn'], a: 2 },
+  { q: 'Wat is de hoofdstad van de provincie Zuid-Holland?', o: ['Rotterdam', 'Leiden', 'Delft', 'Den Haag'], a: 3 },
+  { q: 'Wat is de Randstad?', o: ['Het drukke gebied met onder andere Amsterdam, Rotterdam, Den Haag en Utrecht', 'Een dorp in Limburg', 'Een dijk langs de zee', 'De dertiende provincie'], a: 0 },
+  { q: 'Wat is een polder?', o: ['Een heuvel met bos', 'Land dat is drooggemaakt en wordt beschermd door dijken', 'Een haven voor grote schepen', 'Een oude binnenstad'], a: 1 },
+  { q: 'Waarvoor werden molens in Nederland vroeger gebruikt?', o: ['Om elektriciteit te maken voor de trein', 'Alleen voor toeristen', 'Om water weg te pompen en graan te malen', 'Om huizen te verwarmen'], a: 2 },
+  { q: 'Een groot deel van Nederland ligt…', o: ['hoog in de bergen', 'ver van de zee', 'boven de wolken', 'onder de zeespiegel'], a: 3 },
+  { q: 'Welke provincie ligt in het noorden van Nederland?', o: ['Friesland', 'Limburg', 'Zeeland', 'Noord-Brabant'], a: 0 },
+  { q: 'Welke grote rivier stroomt door Nederland naar de zee?', o: ['De Donau', 'De Rijn', 'De Nijl', 'De Theems'], a: 1 },
+  { q: 'Wat is het IJsselmeer?', o: ['Een rivier in Limburg', 'Een haven bij Rotterdam', 'Een groot meer dat vroeger een zee was', 'Een kanaal naar Duitsland'], a: 2 },
+
+  // --- Wonen & buren ---
+  { q: 'Wat doet de Huurcommissie?', o: ['Woningen bouwen', 'Huizen verkopen', 'De huur innen voor de verhuurder', 'Helpen bij een conflict tussen huurder en verhuurder, bijvoorbeeld over de huurprijs'], a: 3 },
+  { q: 'Binnen welke termijn geef je een verhuizing door aan de gemeente?', o: ['Uiterlijk vijf dagen na de verhuizing', 'Binnen een jaar', 'Dat hoeft niet', 'Alleen als je een woning koopt'], a: 0 },
+  { q: 'Wat is de wachttijd bij een sociale huurwoning?', o: ['Een boete voor te laat huur betalen', 'De tijd die je moet wachten voordat je een woning krijgt aangeboden', 'De opzegtermijn van je werk', 'De tijd tot je huurtoeslag krijgt'], a: 1 },
+  { q: 'Je buren maken ’s nachts veel lawaai en praten helpt niet. Wat kun je doen?', o: ['Zelf ook lawaai maken', 'Helemaal niets doen', 'Contact opnemen met de verhuurder of de gemeente, of buurtbemiddeling vragen', 'Meteen verhuizen'], a: 2 },
+  { q: 'Wat is buurtbemiddeling?', o: ['Een verzekering voor je huis', 'Een cursus Nederlands voor de buurt', 'Een controle van de gemeente in je woning', 'Vrijwilligers die buren helpen om samen een oplossing te vinden'], a: 3 },
+  { q: 'Waar horen etensresten en tuinafval meestal in?', o: ['In de gft-bak', 'In de papierbak', 'In de glasbak', 'In de bak voor plastic'], a: 0 },
+  { q: 'Mag een verhuurder je zomaar uit je huurwoning zetten?', o: ['Ja, dat mag altijd', 'Nee, hij moet zich aan de wet en het huurcontract houden; vaak beslist de rechter', 'Alleen in de winter', 'Alleen als je huurtoeslag krijgt'], a: 1 },
+  { q: 'Wat doe je met grof afval, zoals een oude bank?', o: ['Zomaar op straat zetten', 'In de gewone afvalcontainer duwen', 'Naar de milieustraat brengen of laten ophalen door de gemeente', 'In de gft-bak doen'], a: 2 },
+
+  // --- Gezondheidszorg ---
+  { q: 'Wat betekent het dat de huisarts poortwachter is?', o: ['Hij bewaakt de deur van het ziekenhuis', 'Hij regelt jouw zorgverzekering', 'Hij bepaalt hoe hoog je eigen risico is', 'Je gaat eerst naar hem; hij verwijst je zo nodig door naar het ziekenhuis'], a: 3 },
+  { q: 'Wat gebeurt er als je je niet verzekert voor zorg terwijl dat wel moet?', o: ['Je krijgt eerst een waarschuwing en daarna een boete', 'Er gebeurt niets', 'Je krijgt korting op de premie', 'De gemeente betaalt jouw zorg'], a: 0 },
+  { q: 'Wie kiest jouw zorgverzekering?', o: ['De gemeente kiest die voor je', 'Je kiest zelf een zorgverzekeraar', 'Je werkgever kiest die', 'De huisarts kiest die'], a: 1 },
+  { q: 'Wanneer kun je van zorgverzekering wisselen?', o: ['Elke maand', 'Nooit', 'Eén keer per jaar, aan het einde van het jaar', 'Alleen als je verhuist'], a: 2 },
+  { q: 'Wat is de basisverzekering?', o: ['Een verzekering voor je huis', 'Een verzekering voor je auto', 'Een spaarrekening voor zorgkosten', 'Het verplichte pakket zorg dat elke zorgverzekering vergoedt'], a: 3 },
+  { q: 'Je hebt in het weekend een klein wondje dat gehecht moet worden. Wat doe je?', o: ['Je belt de huisartsenpost', 'Je belt 112', 'Je gaat naar de apotheek voor een operatie', 'Je wacht tot je een afspraak bij de tandarts hebt'], a: 0 },
+  { q: 'Wat is een recept van de dokter?', o: ['Een rekening voor het consult', 'Een briefje waarmee je bepaalde medicijnen bij de apotheek kunt halen', 'Een verwijzing naar het ziekenhuis', 'Een bewijs van je verzekering'], a: 1 },
+  { q: 'Wat doet een verloskundige?', o: ['Zorgt voor je gebit', 'Verkoopt medicijnen', 'Begeleidt vrouwen tijdens de zwangerschap en de bevalling', 'Doet grote operaties in het ziekenhuis'], a: 2 },
+
+  // --- Onderwijs ---
+  { q: 'Hoeveel groepen heeft de basisschool?', o: ['Vier', 'Zes', 'Tien', 'Acht'], a: 3 },
+  { q: 'In welke groep krijgt een kind het schooladvies voor de middelbare school?', o: ['In groep 8', 'In groep 3', 'In groep 5', 'Pas op de middelbare school'], a: 0 },
+  { q: 'Wat betekent havo?', o: ['Hoger administratief vervolgonderwijs', 'Hoger algemeen voortgezet onderwijs', 'Handel en voortgezet onderwijs', 'Huishoudelijk en algemeen vormend onderwijs'], a: 1 },
+  { q: 'Wat is het mbo?', o: ['Onderwijs aan de universiteit', 'Onderwijs op de basisschool', 'Middelbaar beroepsonderwijs: een praktische beroepsopleiding', 'Onderwijs alleen voor mensen met een uitkering'], a: 2 },
+  { q: 'Welke opleiding volgt meestal na het vwo?', o: ['Het mbo', 'De basisschool', 'Het vmbo', 'De universiteit'], a: 3 },
+  { q: 'Wat is studiefinanciering?', o: ['Geld van DUO voor studenten, deels lening en soms een beurs', 'Salaris dat de school aan studenten betaalt', 'Een gratis laptop van de gemeente', 'Een belasting die studenten betalen'], a: 0 },
+  { q: 'Je bent het niet eens met het schooladvies van je kind. Wat kun je doen?', o: ['Niets, het advies staat altijd vast', 'In gesprek gaan met de school; valt de doorstroomtoets hoger uit, dan kan het advies worden aangepast', 'Aangifte doen bij de politie', 'Je kind thuis houden van school'], a: 1 },
+  { q: 'Wie zorgt voor de schoolboeken op de middelbare school?', o: ['De ouders kopen alle boeken zelf', 'De gemeente koopt de boeken', 'De school stelt de boeken gratis beschikbaar', 'DUO stuurt de boeken op'], a: 2 },
+
+  // --- Werk & arbeidsrecht ---
+  { q: 'Wat is het verschil tussen een tijdelijk en een vast contract?', o: ['Er is geen verschil', 'Een vast contract duurt altijd één jaar', 'Een tijdelijk contract kan nooit stoppen', 'Een tijdelijk contract stopt op een afgesproken datum; een vast contract heeft geen einddatum'], a: 3 },
+  { q: 'Wat is het minimumloon?', o: ['Het laagste loon per uur dat een werkgever wettelijk mag betalen', 'Het gemiddelde salaris in Nederland', 'Het maximum dat je mag verdienen', 'De hoogte van een uitkering'], a: 0 },
+  { q: 'Mag een werkgever je zomaar ontslaan?', o: ['Ja, dat mag altijd', 'Nee, daar gelden regels voor; vaak is toestemming van het UWV of de rechter nodig', 'Alleen in de maand januari', 'Alleen als je ziek bent'], a: 1 },
+  { q: 'Wat is een opzegtermijn?', o: ['De duur van je proeftijd', 'De tijd tot je volgende vakantie', 'De tijd tussen je opzegging en je laatste werkdag', 'De tijd tot je met pensioen gaat'], a: 2 },
+  { q: 'Hoeveel vakantiedagen heb je wettelijk minimaal bij een fulltime baan?', o: ['Vijf dagen per jaar', 'Tien dagen per jaar', 'Vijftig dagen per jaar', 'Minimaal twintig dagen per jaar'], a: 3 },
+  { q: 'Wat is zwangerschaps- en bevallingsverlof?', o: ['Betaald verlof van minimaal zestien weken rond de bevalling', 'Onbetaald verlof van één week', 'Verlof van drie jaar', 'Verlof dat alleen voor vaders geldt'], a: 0 },
+  { q: 'Waar gaat de Arbowet over?', o: ['Over belasting op je loon', 'Over veilig en gezond werken', 'Over huurwoningen', 'Over het onderwijs'], a: 1 },
+  { q: 'Je doet gevaarlijk werk, maar krijgt geen veiligheidsschoenen. Wat klopt?', o: ['Dat is normaal in Nederland', 'Je moet ze altijd zelf kopen', 'De werkgever moet zorgen voor veilig werk en de juiste beschermingsmiddelen', 'Je mag daar niet over klagen'], a: 2 },
+  { q: 'Krijgt de partner verlof na de geboorte van een kind?', o: ['Nee, nooit', 'Alleen bij een tweeling', 'Alleen onbetaald verlof', 'Ja, geboorteverlof; daarna is aanvullend geboorteverlof mogelijk'], a: 3 },
+
+  // --- Geld, belasting & toeslagen ---
+  { q: 'Wat is DigiD?', o: ['Je persoonlijke inlogcode voor websites van de overheid', 'Een bankpas van de gemeente', 'Een soort identiteitskaart', 'Een verzekering voor internet'], a: 0 },
+  { q: 'Waar vraag je toeslagen aan?', o: ['Bij de gemeente', 'Bij de Belastingdienst, via Mijn toeslagen met je DigiD', 'Bij de bank', 'Bij het UWV'], a: 1 },
+  { q: 'Je gaat meer verdienen en krijgt toeslag. Wat moet je doen?', o: ['Niets doen', 'Wachten tot volgend jaar', 'De wijziging doorgeven aan de Belastingdienst, anders moet je geld terugbetalen', 'Je toeslag voor altijd stopzetten'], a: 2 },
+  { q: 'Wie kan huurtoeslag krijgen?', o: ['Iedereen met een woning', 'Alleen mensen zonder werk', 'Alleen mensen met kinderen', 'Huurders met een lager inkomen en een huur die niet te hoog is'], a: 3 },
+  { q: 'Wat is btw?', o: ['Belasting die in de prijs van producten en diensten zit', 'Een toeslag van de gemeente', 'Een boete voor te laat betalen', 'Een verplichte verzekering'], a: 0 },
+  { q: 'Wanneer doe je meestal aangifte inkomstenbelasting over het vorige jaar?', o: ['In december', 'Meestal tussen 1 maart en 1 mei', 'In augustus', 'Elke maand'], a: 1 },
+  { q: 'Wat doet een deurwaarder?', o: ['Deuren en sloten repareren', 'Paspoorten controleren bij de gemeente', 'Via de rechter openstaande schulden innen', 'Leningen geven namens de bank'], a: 2 },
+  { q: 'Wat is het kindgebonden budget?', o: ['Salaris voor kinderen die werken', 'Geld dat de school aan ouders geeft', 'Een lening voor studenten', 'Een extra bijdrage van de Belastingdienst voor ouders met een lager inkomen'], a: 3 },
+
+  // --- Verkeer & veiligheid ---
+  { q: 'Je ziet witte driehoeken (haaientanden) op de weg. Wat betekent dat?', o: ['Jij moet voorrang geven aan het verkeer op de andere weg', 'Jij hebt voorrang', 'Alleen fietsers moeten stoppen', 'Je moet toeteren'], a: 0 },
+  { q: 'Mag je fietsen als je veel alcohol hebt gedronken?', o: ['Ja, dat mag altijd', 'Nee, dronken fietsen is verboden en je kunt een boete krijgen', 'Alleen in het weekend', 'Alleen op het fietspad'], a: 1 },
+  { q: 'Wat doe je na een aanrijding met schade?', o: ['Snel wegrijden', 'De auto meteen verkopen', 'Samen een schadeformulier invullen; bij letsel of onenigheid de politie bellen', 'Niets, de verzekering hoort het vanzelf'], a: 2 },
+  { q: 'Je fiets is gestolen. Wat doe je?', o: ['Niets, dat gebeurt nu eenmaal', 'Een nieuwe fiets kopen zonder iets te melden', 'Meteen 112 bellen', 'Aangifte doen bij de politie, vaak kan dat online'], a: 3 },
+  { q: 'Wat is aangifte doen?', o: ['Officieel bij de politie melden dat er een strafbaar feit is gebeurd', 'Belasting betalen aan de gemeente', 'Een verzekering afsluiten', 'Je nieuwe adres doorgeven'], a: 0 },
+  { q: 'Wat doet de brandweer, naast branden blussen?', o: ['Alleen branden blussen, meer niet', 'Ook helpen bij ongelukken en mensen redden', 'Boetes uitdelen in het verkeer', 'Rijbewijzen afgeven'], a: 1 },
+  { q: 'Mag je met de fiets naast elkaar rijden?', o: ['Nee, dat mag nooit', 'Met vier personen naast elkaar mag', 'Met twee naast elkaar mag, meer niet', 'Alleen naast elkaar op de stoep'], a: 2 },
+  { q: 'Wat is meestal de maximumsnelheid binnen de bebouwde kom?', o: ['80 kilometer per uur', '100 kilometer per uur', '20 kilometer per uur', 'Meestal 50 kilometer per uur'], a: 3 },
+
+  // --- Omgangsvormen & cultuur ---
+  { q: 'Waarom gebruiken veel Nederlanders een agenda?', o: ['Ze plannen afspraken graag van tevoren, ook met vrienden en familie', 'Omdat de gemeente dat verplicht', 'Omdat ze geen telefoon hebben', 'Omdat de Belastingdienst dat vraagt'], a: 0 },
+  { q: 'Nederlanders zijn vaak direct. Wat betekent dat?', o: ['Ze zijn snel boos', 'Ze zeggen open wat ze vinden; dat is meestal niet onbeleefd bedoeld', 'Ze praten liever niet', 'Ze willen geen contact met buitenlanders'], a: 1 },
+  { q: 'Je bent uitgenodigd voor een verjaardag. Wat is gebruikelijk?', o: ['Met tien onaangekondigde gasten komen', 'Twee uur te laat komen', 'Een klein cadeau meenemen en de jarige feliciteren', 'Eten voor alle gasten meebrengen'], a: 2 },
+  { q: 'Wat vieren mensen op 5 december met Sinterklaas?', o: ['Het einde van de oorlog', 'De verjaardag van de koning', 'Het begin van het nieuwe jaar', 'Een feest, vooral voor kinderen, met cadeautjes en gedichten'], a: 3 },
+  { q: 'Wat vieren veel mensen op 31 december en 1 januari?', o: ['Oud en nieuw: de jaarwisseling', 'Koningsdag', 'Bevrijdingsdag', 'Het begin van het schooljaar'], a: 0 },
+  { q: 'Je wilt bij iemand op bezoek gaan. Wat is beleefd in Nederland?', o: ['Zomaar onaangekondigd langsgaan', 'Van tevoren bellen of appen om een afspraak te maken', 'Midden in de nacht aanbellen', 'Een week blijven logeren'], a: 1 },
+  { q: 'Hoe spreek je iemand aan die je niet kent, bijvoorbeeld een oudere buurvrouw?', o: ['Met “jij” en haar voornaam', 'Zonder iets te zeggen', 'Beleefd met “u”', 'Met haar achternaam zonder aanhef'], a: 2 },
+  { q: 'Waar kun je vrijwilligerswerk vinden?', o: ['Alleen bij de gemeente', 'Vrijwilligerswerk bestaat niet meer', 'Alleen via een uitzendbureau', 'Bijvoorbeeld bij een sportclub, school, buurthuis of vrijwilligerscentrale'], a: 3 },
+
+  // --- Inburgering zelf ---
+  { q: 'Welk taalniveau hoort bij de B1-route van de Wet inburgering 2021?', o: ['Niveau B1', 'Niveau A1', 'Niveau C2', 'Er is geen niveau'], a: 0 },
+  { q: 'Wie begeleidt je sinds de Wet inburgering 2021 en maakt samen met jou een plan?', o: ['De IND', 'De gemeente', 'De politie', 'Je werkgever'], a: 1 },
+  { q: 'Wat is de participatieverklaring?', o: ['Een diploma Nederlands', 'Een verblijfsvergunning', 'Een verklaring waarmee je laat zien dat je de kernwaarden van de Nederlandse samenleving kent en respecteert', 'Een arbeidscontract met de gemeente'], a: 2 },
+  { q: 'Wat is de MAP in de inburgering?', o: ['Een kaart van Nederland', 'Een extra taalexamen', 'Een verplichte verzekering', 'De Module Arbeidsmarkt en Participatie: je leert hoe je in Nederland werk kunt vinden'], a: 3 },
+  { q: 'Waar staat ONA voor in de oude inburgeringswet?', o: ['Oriëntatie op de Nederlandse Arbeidsmarkt', 'Onderwijs Nederlands Algemeen', 'Officiële Nederlandse Aanvraag', 'Opleiding Nederlandse Ambtenaren'], a: 0 },
+  { q: 'Hoeveel tijd heb je meestal om in te burgeren onder de Wet inburgering 2021?', o: ['Eén jaar', 'Drie jaar', 'Tien jaar', 'Er is geen termijn'], a: 1 },
+  { q: 'Welke onderdelen horen bij de inburgering?', o: ['Alleen rekenen', 'Alleen een gesprek met de gemeente', 'De Nederlandse taal, KNM en de Module Arbeidsmarkt en Participatie', 'Alleen een schrijftoets'], a: 2 },
+  { q: 'Wat betekent de afkorting KNM?', o: ['Koninklijke Nederlandse Maatschappij', 'Kennis van Nederlandse Media', 'Kennis van het Nederlandse Ministerie', 'Kennis van de Nederlandse Maatschappij'], a: 3 },
+
+  // --- Media & informatie ---
+  { q: 'Wat is de publieke omroep?', o: ['Televisie en radio die met publiek geld worden gemaakt en onafhankelijk zijn', 'Een bedrijf dat eigendom is van de koning', 'Een krant van de gemeente', 'Een website van de Belastingdienst'], a: 0 },
+  { q: 'Bepaalt de regering wat er in het nieuws komt?', o: ['Ja, altijd', 'Nee, de pers is vrij en onafhankelijk', 'Alleen op zondag', 'Alleen bij de radio'], a: 1 },
+  { q: 'Je leest een schokkend bericht op sociale media. Wat kun je het beste doen?', o: ['Het meteen geloven', 'Het snel delen met iedereen', 'Het controleren bij meerdere betrouwbare bronnen, zoals bekende nieuwsmedia', 'Het doorsturen naar de politie'], a: 2 },
+  { q: 'Waar gaat de AVG over?', o: ['Over het verkeer', 'Over belasting', 'Over verzekeringen', 'Over de bescherming van jouw persoonsgegevens'], a: 3 },
+  { q: 'Mag een bedrijf jouw persoonsgegevens zomaar aan anderen doorgeven?', o: ['Nee, daar gelden strenge regels voor', 'Ja, dat mag altijd', 'Alleen als het bedrijf klein is', 'Alleen op internet'], a: 0 },
+  { q: 'Iemand belt en vraagt om je DigiD of je pincode. Wat doe je?', o: ['Je geeft de code, want het klinkt officieel', 'Je geeft de code nooit; de overheid en de bank vragen daar nooit om', 'Je stuurt een foto van je paspoort', 'Je geeft alleen je pincode'], a: 1 },
+  { q: 'Waar vind je betrouwbare informatie over regels van de overheid?', o: ['Op sociale media', 'In reclamefolders', 'Op officiële websites, zoals rijksoverheid.nl en de site van je gemeente', 'Bij de kassa van de supermarkt'], a: 2 },
+  { q: 'Welk recht heb je volgens de privacywet?', o: ['Je mag alles over anderen online zetten', 'Je mag de gegevens van je buren opvragen', 'Je hoeft geen wachtwoord te gebruiken', 'Je mag vragen welke gegevens een organisatie van jou heeft'], a: 3 },
+
+  // --- Milieu & duurzaamheid ---
+  { q: 'Wat is statiegeld?', o: ['Geld dat je terugkrijgt als je een fles of blikje inlevert', 'Een boete voor verkeerd afval', 'Belasting op drinkwater', 'Een fooi voor de vuilnisman'], a: 0 },
+  { q: 'Waar lever je lege batterijen in?', o: ['In de gewone afvalbak', 'Bij een inleverpunt in de winkel of op de milieustraat', 'In de gft-bak', 'In de papierbak'], a: 1 },
+  { q: 'Waarom scheiden veel Nederlanders hun afval?', o: ['Omdat het netter staat op straat', 'Omdat de gemeente er meer geld aan verdient', 'Zodat materialen hergebruikt kunnen worden en er minder afval verbrand wordt', 'Omdat er te weinig vuilniswagens zijn'], a: 2 },
+  { q: 'Wat is een goede manier om thuis energie te besparen?', o: ['De verwarming hoger zetten', 'De ramen openzetten terwijl de verwarming aanstaat', 'Alle lampen laten branden', 'De verwarming lager zetten en ledlampen gebruiken'], a: 3 },
+  { q: 'Wat zegt het energielabel van een woning?', o: ['Hoe zuinig de woning met energie omgaat', 'Wat de huurprijs is', 'Hoe oud de woning is', 'Hoeveel mensen er wonen'], a: 0 },
+  { q: 'Waarom nemen veel Nederlanders de fiets of het openbaar vervoer?', o: ['Omdat auto’s verboden zijn', 'Het is vaak goedkoper, gezonder en beter voor het milieu', 'Omdat er bijna geen wegen zijn', 'Omdat de gemeente dat verplicht'], a: 1 },
+  { q: 'Wat zijn zonnepanelen?', o: ['Panelen die het huis tegen regen beschermen', 'Ramen met dubbel glas', 'Panelen op het dak die van zonlicht elektriciteit maken', 'Isolatiemateriaal in de muur'], a: 2 },
+  { q: 'Wat doe je met oude of overgebleven medicijnen?', o: ['Door de wc spoelen', 'In de gewone afvalbak gooien', 'In de gft-bak doen', 'Terugbrengen naar de apotheek'], a: 3 },
 ];
 
