@@ -9,7 +9,7 @@ Free, bilingual (English/Turkish) preparation course for the Dutch exams, from t
 | **B1** | inburgering B1-route / Staatsexamen NT2 I (work, mbo) | same five | 40 per module |
 | **B2** | Staatsexamen NT2 II (hbo, university) | four — no KNM | 30 per module |
 
-**Content:** 3000 words with pictures & audio (1000 per level) · 72 grammar lessons ·
+**Content:** 2977 words with pictures & audio (1000 A2, 982 B1, 995 B2) · 72 grammar lessons ·
 570 practice exams of 25 questions · 220-question KNM bank · 9 games · email login with
 cloud progress sync. Pick a level in the header and everything follows it.
 
@@ -74,7 +74,7 @@ Every push to `main` builds and deploys to GitHub Pages automatically
 ## Data
 
 - `src/data/index.js` — merges every level; `vocabFor(level)`, `grammarFor(level)`, `catsFor(level)`
-- `src/data/vocab.js` (A2, 1000) + `vocab-b1a/b1b.js` (B1, 1000) + `vocab-b2a/b2b.js` (B2, 1000) —
+- `src/data/vocab.js` (A2) + `vocab-b1a/b1b.js` (B1) + `vocab-b2a/b2b/b2c.js` (B2) —
   `{ id, nl, en, tr, ex, emoji, cat, level }`
 - `src/data/grammar.js` (30 A2) + `grammar-b1.js` (22) + `grammar-b2.js` (20 style & argumentation lessons)
 - `src/data/verbs.js` — irregular verb table for the conjugation game
