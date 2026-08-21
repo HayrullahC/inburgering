@@ -118,7 +118,9 @@ let watchdog = null;
 
 // The snapshot identity only changes when the state changes, so it is safe to use
 // with useSyncExternalStore.
-let snap = { on: false, paused: false, i: 0, n: 0, nl: false };
+// `src` is the text currently being read, so a 🔊 button can tell whether it is the
+// one speaking and offer to stop itself.
+let snap = { on: false, paused: false, i: 0, n: 0, nl: false, src: null };
 const speechListeners = new Set();
 
 function setSnap(patch) {
@@ -230,6 +232,7 @@ export function speak(text, rate = 0.9) {
   queue = parts;
   chunkIdx = 0;
   curRate = rate;
+  setSnap({ src: text });
   playChunk();
 }
 
@@ -239,7 +242,7 @@ export function stopSpeak() {
   queue = [];
   chunkIdx = 0;
   window.speechSynthesis?.cancel();
-  if (snap.on || snap.paused) setSnap({ on: false, paused: false, i: 0, n: 0 });
+  if (snap.on || snap.paused) setSnap({ on: false, paused: false, i: 0, n: 0, src: null });
 }
 
 export function pauseSpeak() {

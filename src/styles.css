@@ -404,3 +404,4 @@ a.card:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(28, 35, 
   .topbar nav { order: 3; width: 100%; }
   .match-grid { grid-template-columns: repeat(2, 1fr); }
 }
+.spk.on { color: var(--err); font-size: 15px; }

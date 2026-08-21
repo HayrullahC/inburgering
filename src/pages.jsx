@@ -22,10 +22,21 @@ function countPassed(level, mod) {
   return n;
 }
 
+// While this button is the one speaking it turns into a stop button — a reading text
+// can be minutes long and you must be able to silence it.
 export function Speaker({ text, rate }) {
+  const sp = useSyncExternalStore(subscribeSpeech, getSpeech);
+  const mine = sp.on && sp.src === text;
   return (
-    <button className="spk" onClick={(e) => { e.stopPropagation(); speak(text, rate); }} title="🔊">
-      🔊
+    <button
+      className={'spk' + (mine ? ' on' : '')}
+      title={mine ? 'stop' : 'play'}
+      onClick={(e) => {
+        e.stopPropagation();
+        mine ? stopSpeak() : speak(text, rate);
+      }}
+    >
+      {mine ? '⏹' : '🔊'}
     </button>
   );
 }
