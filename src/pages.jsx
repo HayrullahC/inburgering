@@ -1,8 +1,9 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { TURNSTILE_SITE_KEY } from './config.js';
 import {
-  supa, speak, stopSpeak, getP, setP, MODULES, PASS_PCT, hasSTT, listenOnce,
+  supa, speak, stopSpeak, pauseSpeak, resumeSpeak, subscribeSpeech, getSpeech,
+  getP, setP, MODULES, PASS_PCT, hasSTT, listenOnce,
   LEVELS, getLevel, levelModules, examCount, examKey,
 } from './lib.js';
 import { useLang, useT, useUser } from './App.jsx';
@@ -26,6 +27,46 @@ export function Speaker({ text, rate }) {
     <button className="spk" onClick={(e) => { e.stopPropagation(); speak(text, rate); }} title="🔊">
       🔊
     </button>
+  );
+}
+
+// Play / pause / stop for a listening fragment, with a "sentence 3/8" progress line.
+export function AudioPlayer({ text, rate = 0.85, playLabel }) {
+  const t = useT();
+  const sp = useSyncExternalStore(subscribeSpeech, getSpeech);
+  useEffect(() => stopSpeak, []);
+
+  return (
+    <div className="listen-box">
+      {!sp.on ? (
+        <button className="btn big" onClick={() => speak(text, rate)}>
+          ▶ {playLabel || t({ en: 'Play audio', tr: 'Sesi çal' })}
+        </button>
+      ) : (
+        <>
+          <div className="player-btns">
+            <button className="btn big" onClick={() => (sp.paused ? resumeSpeak() : pauseSpeak())}>
+              {sp.paused ? '▶ ' + t({ en: 'Continue', tr: 'Devam et' }) : '⏸ ' + t({ en: 'Pause', tr: 'Duraklat' })}
+            </button>
+            <button className="btn ghost" onClick={stopSpeak}>
+              ⏹ {t({ en: 'Stop', tr: 'Durdur' })}
+            </button>
+          </div>
+          <div className="play-progress">
+            <span>{t({ en: 'sentence', tr: 'cümle' })} {Math.min(sp.i + 1, sp.n)}/{sp.n}</span>
+            <div className="bar"><div style={{ width: ((sp.i + 1) / sp.n) * 100 + '%' }} /></div>
+          </div>
+        </>
+      )}
+      {!sp.nl && (
+        <p className="voice-warn">
+          ⚠️ {t({
+            en: 'No Dutch voice is installed on this device, so the audio may sound off. On Android: Settings → Language & input → Text-to-speech → install Nederlands.',
+            tr: 'Bu cihazda Hollandaca ses paketi yok, ses yanlış aksanla okunabilir. Android: Ayarlar → Dil ve giriş → Metin okuma → Nederlands kur.',
+          })}
+        </p>
+      )}
+    </div>
   );
 }
 
@@ -260,7 +301,6 @@ export function ExamRunner() {
   const [answers, setAnswers] = useState([]);
   const [sel, setSel] = useState(null);
   const [done, setDone] = useState(false);
-  const [played, setPlayed] = useState(false);
 
   useEffect(() => {
     setData(null);
@@ -291,7 +331,6 @@ export function ExamRunner() {
     const a2 = [...answers, sel];
     setAnswers(a2);
     setSel(null);
-    setPlayed(false);
     stopSpeak();
     if (i + 1 < qs.length) setI(i + 1);
     else finish(a2);
@@ -347,12 +386,12 @@ export function ExamRunner() {
 
       {passage && <div className="passage">{passage} <Speaker text={passage} /></div>}
       {isListening && (
-        <div className="listen-box">
-          <button className="btn big" onClick={() => { speak(script, 0.85); setPlayed(true); }}>
-            ▶ {t({ en: 'Play audio', tr: 'Sesi çal' })}
-          </button>
-          {!played && <p><small>{t({ en: 'Listen first, then answer.', tr: 'Önce dinle, sonra cevapla.' })}</small></p>}
-        </div>
+        <>
+          <AudioPlayer key={mod + n + i} text={script} />
+          <p className="listen-hint"><small>
+            {t({ en: 'You can pause while you read the options.', tr: 'Şıkları okurken duraklatabilirsin.' })}
+          </small></p>
+        </>
       )}
 
       <h2 className="qtext">{q.q} {!isListening && <Speaker text={q.q} />}</h2>
@@ -485,11 +524,7 @@ function OpenRunner({ level, mod, n, qs }) {
         })}</small></p>
       )}
       {q.sc && <div className="scene">{q.sc}</div>}
-      {q.l && (
-        <div className="listen-box">
-          <button className="btn big" onClick={() => speak(q.l, 0.85)}>▶ {t({ en: 'Play', tr: 'Dinle' })}</button>
-        </div>
-      )}
+      {q.l && <AudioPlayer key={mod + n + i} text={q.l} playLabel={t({ en: 'Play', tr: 'Dinle' })} />}
 
       {speaking ? (
         <div className="listen-box">
