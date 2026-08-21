@@ -5,6 +5,7 @@ import { VOCAB_B1A } from './vocab-b1a.js';
 import { VOCAB_B1B } from './vocab-b1b.js';
 import { VOCAB_B2A } from './vocab-b2a.js';
 import { VOCAB_B2B } from './vocab-b2b.js';
+import { VOCAB_B2C } from './vocab-b2c.js';
 import { GRAMMAR as GRAMMAR_A2 } from './grammar.js';
 import { GRAMMAR_B1 } from './grammar-b1.js';
 import { GRAMMAR_B2 } from './grammar-b2.js';
@@ -46,6 +47,7 @@ export const VOCAB = [
   ...dedupe(VOCAB_B1B),
   ...dedupe(VOCAB_B2A),
   ...dedupe(VOCAB_B2B),
+  ...dedupe(VOCAB_B2C),
 ];
 
 export const GRAMMAR = [
