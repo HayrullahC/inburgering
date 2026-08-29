@@ -32,6 +32,9 @@ alter table public.ai_usage add column if not exists burst int not null default 
 -- One statement the Edge Function calls per message: bump the daily counter and the
 -- per-minute burst counter together, and hand both back, so counting and reading cannot
 -- drift apart under concurrent requests.
+-- the earlier version returned int; Postgres refuses to change a return type in place
+drop function if exists public.bump_ai_usage(uuid);
+
 create or replace function public.bump_ai_usage(p_user uuid)
 returns json
 language plpgsql
