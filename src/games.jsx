@@ -3,10 +3,32 @@ import { Link } from 'react-router-dom';
 import { speak, stopSpeak, getP, setP, shuffle } from './lib.js';
 import { useLang, useT } from './App.jsx';
 import { vocabFor, grammarFor } from './data/index.js';
+import { useExamples, exText } from './data/ex/index.js';
 import { VERBS } from './data/verbs.js';
 
 // Every game works on the words of the level the user is currently studying.
 const lw = () => vocabFor(getP('level', 'A2'));
+
+// Shared hint button: every game offers a nudge instead of leaving you stuck.
+function Hint({ onClick, disabled, text }) {
+  const t = useT();
+  return (
+    <div className="hint-row">
+      <button className="hint-btn" onClick={onClick} disabled={disabled}>
+        💡 {t({ en: 'Hint', tr: 'İpucu' })}
+      </button>
+      {text && <span className="hint-text">{text}</span>}
+    </div>
+  );
+}
+
+// "h _ _ s" — reveals the first n letters, keeps spaces visible.
+function masked(word, n) {
+  return word
+    .split('')
+    .map((ch, i) => (i < n || ch === ' ' || ch === '-' ? ch : '_'))
+    .join(' ');
+}
 
 export function GamesHome() {
   const t = useT();
@@ -42,8 +64,11 @@ export function GamesHome() {
 export function Flashcards() {
   const lang = useLang();
   const t = useT();
+  const level = getP('level', 'A2');
+  const ex = useExamples(level);
   const [queue, setQueue] = useState(null);
   const [flip, setFlip] = useState(false);
+  const [clue, setClue] = useState(false);
   const [doneCount, setDoneCount] = useState(0);
 
   useEffect(() => {
@@ -70,6 +95,7 @@ export function Flashcards() {
     fc[w.id] = good ? Math.min((fc[w.id] || 0) + 1, 5) : 0;
     setP('fc', fc);
     setFlip(false);
+    setClue(false);
     setDoneCount(doneCount + 1);
     // wrong cards go to the back of this session's queue
     setQueue(good ? queue.slice(1) : [...queue.slice(1), w]);
@@ -83,17 +109,28 @@ export function Flashcards() {
           <>
             <div className="fc-emoji">{w.emoji}</div>
             <div className="fc-word">{w.nl}</div>
+            {clue && <div className="fc-clue">{w.ex}</div>}
             <div className="fc-hint">{t({ en: 'tap to flip', tr: 'çevirmek için dokun' })}</div>
           </>
         ) : (
           <>
             <div className="fc-emoji">{w.emoji}</div>
             <div className="fc-word">{lang === 'tr' ? w.tr : w.en}</div>
-            <div>{w.ex}</div>
+            <div className="fc-ex">
+              {w.ex}
+              <button className="spk" onClick={(e) => { e.stopPropagation(); speak(w.ex); }}>🔊</button>
+            </div>
+            {exText(ex, w, lang) && <div className="fc-ex-tr">{exText(ex, w, lang)}</div>}
             <div className="fc-hint">{w.nl}</div>
           </>
         )}
       </div>
+      {!flip && !clue && (
+        <Hint
+          onClick={() => setClue(true)}
+          text={t({ en: 'see the word in a sentence', tr: 'kelimeyi cümle içinde gör' })}
+        />
+      )}
       {flip && (
         <div className="fc-btns">
           <button className="btn again" onClick={() => grade(false)}>✘ {t({ en: 'Again', tr: 'Tekrar' })}</button>
@@ -112,6 +149,7 @@ export function MatchGame() {
   const [sel, setSel] = useState(null);
   const [wrong, setWrong] = useState(null);
   const [matched, setMatched] = useState(new Set());
+  const [glow, setGlow] = useState([]); // pair revealed by a hint
   const [start, setStart] = useState(Date.now());
   const [now, setNow] = useState(Date.now());
 
@@ -162,22 +200,36 @@ export function MatchGame() {
           <button className="btn" onClick={newGame}>{t({ en: 'Play again', tr: 'Tekrar oyna' })}</button>
         </div>
       ) : (
-        <div className="match-grid">
-          {tiles.map((tile) => (
-            <div
-              key={tile.key}
-              className={
-                'match-tile ' +
-                (matched.has(tile.key) ? 'done ' : '') +
-                (sel?.key === tile.key ? 'sel ' : '') +
-                (wrong?.includes(tile.key) ? 'wrong' : '')
-              }
-              onClick={() => click(tile)}
-            >
-              {tile.label}
-            </div>
-          ))}
-        </div>
+        <>
+          <div className="match-grid">
+            {tiles.map((tile) => (
+              <div
+                key={tile.key}
+                className={
+                  'match-tile ' +
+                  (matched.has(tile.key) ? 'done ' : '') +
+                  (sel?.key === tile.key ? 'sel ' : '') +
+                  (glow.includes(tile.key) ? 'glow ' : '') +
+                  (wrong?.includes(tile.key) ? 'wrong' : '')
+                }
+                onClick={() => click(tile)}
+              >
+                {tile.label}
+              </div>
+            ))}
+          </div>
+          <Hint
+            onClick={() => {
+              const open = tiles.filter((x) => !matched.has(x.key));
+              const pick = open[Math.floor(Math.random() * open.length)];
+              if (!pick) return;
+              const mate = open.find((x) => x.pair === pick.pair && x.key !== pick.key);
+              setGlow([pick.key, mate?.key].filter(Boolean));
+              setTimeout(() => setGlow([]), 1500);
+            }}
+            text={t({ en: 'light up one matching pair', tr: 'eşleşen bir çifti yak' })}
+          />
+        </>
       )}
     </div>
   );
@@ -192,10 +244,13 @@ export function Sprint() {
   const [q, setQ] = useState(null);
   const [over, setOver] = useState(false);
 
+  const [cut, setCut] = useState([]); // options removed by a hint
+
   function nextQ() {
     const w = lw()[Math.floor(Math.random() * lw().length)];
     const wrong = shuffle(lw().filter((x) => x.id !== w.id)).slice(0, 3);
     setQ({ w, opts: shuffle([w, ...wrong]) });
+    setCut([]);
   }
   useEffect(nextQ, []);
   useEffect(() => {
@@ -241,9 +296,21 @@ export function Sprint() {
       </div>
       <div className="opts" style={{ marginTop: 14 }}>
         {q.opts.map((o) => (
-          <button key={o.id} className="opt" onClick={() => answer(o)}>{o.nl}</button>
+          <button
+            key={o.id}
+            className={'opt' + (cut.includes(o.id) ? ' cut' : '')}
+            disabled={cut.includes(o.id)}
+            onClick={() => answer(o)}
+          >
+            {o.nl}
+          </button>
         ))}
       </div>
+      <Hint
+        disabled={cut.length > 0}
+        onClick={() => setCut(shuffle(q.opts.filter((o) => o.id !== q.w.id)).slice(0, 2).map((o) => o.id))}
+        text={t({ en: 'remove two wrong answers', tr: 'iki yanlış şıkkı ele' })}
+      />
     </div>
   );
 }
@@ -257,6 +324,7 @@ export function Spell() {
   const [val, setVal] = useState('');
   const [state, setState] = useState(null); // null | 'ok' | 'err'
   const [score, setScore] = useState(0);
+  const [reveal, setReveal] = useState(0); // letters uncovered by hints
   const inputRef = useRef(null);
 
   // lowercase, strip accents, collapse spaces — 'een' matches 'één'
@@ -274,6 +342,7 @@ export function Spell() {
     setTimeout(() => {
       setState(null);
       setVal('');
+      setReveal(0);
       setW(lw()[Math.floor(Math.random() * lw().length)]);
       setRound(round + 1);
       inputRef.current?.focus();
@@ -309,6 +378,12 @@ export function Spell() {
         />
       </div>
       <button className="btn" style={{ marginTop: 12 }} onClick={check}>OK</button>
+      <Hint
+        disabled={reveal >= w.nl.length}
+        onClick={() => setReveal(reveal + 1)}
+        text={reveal > 0 ? <code className="mask">{masked(w.nl, reveal)}</code>
+          : t({ en: 'uncover a letter', tr: 'bir harf aç' })}
+      />
     </div>
   );
 }
@@ -400,9 +475,20 @@ export function Sentence() {
       </div>
 
       {!state ? (
-        <button className="btn" disabled={pick.length !== pool.length} onClick={check}>
-          {t({ en: 'Check', tr: 'Kontrol et' })}
-        </button>
+        <>
+          <button className="btn" disabled={pick.length !== pool.length} onClick={check}>
+            {t({ en: 'Check', tr: 'Kontrol et' })}
+          </button>
+          <Hint
+            onClick={() => {
+              // append the word that actually comes next in the model sentence
+              const words = item.nl.replace(/\s+/g, ' ').trim().split(' ');
+              const next = words[pick.length];
+              if (next) setPick([...pick, next]);
+            }}
+            text={t({ en: 'place the next word', tr: 'sıradaki kelimeyi yerleştir' })}
+          />
+        </>
       ) : (
         <div>
           <div className={'notice ' + (state === 'ok' ? 'ok' : 'err')}>
@@ -417,6 +503,25 @@ export function Sentence() {
   );
 }
 
+// Real Dutch article rules, so the hint teaches instead of just giving the answer.
+function articleTip(nl, t) {
+  const word = nl.replace(/^(de|het) /i, '');
+  const rules = [
+    [/(ing|heid|tie|teit|schap|nis|ij|de|te)$/i, 'de', { en: 'Nouns ending in -ing, -heid, -tie, -teit, -schap or -nis are always "de".', tr: '-ing, -heid, -tie, -teit, -schap veya -nis ile bitenler her zaman "de" alır.' }],
+    [/^(ge|be|ver|ont)/i, 'het', { en: 'Nouns starting with ge-, be-, ver- or ont- are usually "het".', tr: 'ge-, be-, ver- veya ont- ile başlayanlar genelde "het" alır.' }],
+    [/(je|pje|tje|kje)$/i, 'het', { en: 'Every diminutive (-je) is "het".', tr: 'Bütün küçültmeler (-je) "het" alır.' }],
+    [/(isme|ment|sel|um)$/i, 'het', { en: 'Nouns ending in -isme, -ment, -sel or -um take "het".', tr: '-isme, -ment, -sel veya -um ile bitenler "het" alır.' }],
+  ];
+  // Only offer a rule when it really explains THIS word — Dutch has exceptions
+  // (het einde ends in -de, de gedachte starts with ge-) and a hint must never mislead.
+  const actual = /^het /i.test(nl) ? 'het' : 'de';
+  for (const [re, art, msg] of rules) if (re.test(word) && art === actual) return t(msg);
+  return t({
+    en: 'No safe rule for this one — it is a word to memorise. Two thirds of nouns are "de".',
+    tr: 'Bu kelimede güvenli bir kural yok — ezberlenmesi gereken bir kelime. İsimlerin üçte ikisi "de" alır.',
+  });
+}
+
 // ---------------- De or het ----------------
 export function Article() {
   const t = useT();
@@ -425,11 +530,12 @@ export function Article() {
   const nouns = useMemo(() => lw().filter((w) => /^(de|het) \S+$/i.test(w.nl)), [level]);
   const [w, setW] = useState(null);
   const [state, setState] = useState(null);
+  const [tip, setTip] = useState('');
   const [score, setScore] = useState(0);
   const [total, setTotal] = useState(0);
   const best = getP('hs:article', 0);
 
-  const next = () => { setW(nouns[Math.floor(Math.random() * nouns.length)]); setState(null); };
+  const next = () => { setW(nouns[Math.floor(Math.random() * nouns.length)]); setState(null); setTip(''); };
   useEffect(() => { if (nouns.length) next(); }, [nouns]);
 
   if (!w) return <div className="page">…</div>;
@@ -474,6 +580,10 @@ export function Article() {
         <button className="btn big" onClick={() => answer('de')}>de</button>
         <button className="btn big ghost" onClick={() => answer('het')}>het</button>
       </div>
+      <Hint
+        onClick={() => setTip(articleTip(w.nl, t))}
+        text={tip}
+      />
       <p><small>{t({ en: 'About two thirds of Dutch nouns take "de".', tr: 'Hollandaca isimlerin yaklaşık üçte ikisi "de" alır.' })}</small></p>
     </div>
   );
@@ -491,6 +601,7 @@ export function VerbGame() {
   }, [level]);
   const [q, setQ] = useState(null);
   const [sel, setSel] = useState(null);
+  const [cut, setCut] = useState([]);
   const [score, setScore] = useState(0);
   const [total, setTotal] = useState(0);
 
@@ -502,6 +613,7 @@ export function VerbGame() {
       .map((x) => x[field]);
     setQ({ v, field, options: shuffle([v[field], ...wrongs]) });
     setSel(null);
+    setCut([]);
   }
   useEffect(() => { if (pool.length) next(); }, [pool]);
 
@@ -536,13 +648,21 @@ export function VerbGame() {
         {q.options.map((o) => (
           <button
             key={o}
-            className={'opt' + (sel ? (o === correct ? ' good-opt' : o === sel ? ' bad-opt' : '') : '')}
+            className={'opt' + (sel ? (o === correct ? ' good-opt' : o === sel ? ' bad-opt' : '') : cut.includes(o) ? ' cut' : '')}
+            disabled={cut.includes(o)}
             onClick={() => answer(o)}
           >
             {o}
           </button>
         ))}
       </div>
+      {!sel && (
+        <Hint
+          disabled={cut.length > 0}
+          onClick={() => setCut(shuffle(q.options.filter((o) => o !== correct)).slice(0, 2))}
+          text={t({ en: 'remove two wrong forms', tr: 'iki yanlış biçimi ele' })}
+        />
+      )}
       {sel && (
         <div>
           <div className="notice">
@@ -567,6 +687,7 @@ export function Dictation() {
   const [s, setS] = useState('');
   const [val, setVal] = useState('');
   const [state, setState] = useState(null);
+  const [skeleton, setSkeleton] = useState(false);
   const [score, setScore] = useState(0);
   const [total, setTotal] = useState(0);
   const ref = useRef(null);
@@ -576,6 +697,7 @@ export function Dictation() {
     setS(pickOne);
     setVal('');
     setState(null);
+    setSkeleton(false);
     setTimeout(() => { speak(pickOne, 0.85); ref.current?.focus(); }, 200);
   }
   useEffect(() => { if (bank.length) next(); return stopSpeak; }, [bank]);
@@ -608,7 +730,16 @@ export function Dictation() {
         placeholder={t({ en: 'Type what you hear…', tr: 'Duyduğunu yaz…' })}
       />
       {!state ? (
-        <button className="btn" disabled={!val.trim()} onClick={check}>{t({ en: 'Check', tr: 'Kontrol et' })}</button>
+        <>
+          <button className="btn" disabled={!val.trim()} onClick={check}>{t({ en: 'Check', tr: 'Kontrol et' })}</button>
+          <Hint
+            disabled={skeleton}
+            onClick={() => setSkeleton(true)}
+            text={skeleton
+              ? <code className="mask">{s.split(' ').map((wd) => wd[0] + '_'.repeat(Math.max(wd.length - 1, 0))).join(' ')}</code>
+              : t({ en: 'show the shape of the sentence', tr: 'cümlenin iskeletini göster' })}
+          />
+        </>
       ) : (
         <div>
           <div className={'notice ' + (state === 'ok' ? 'ok' : 'err')}>
@@ -633,6 +764,7 @@ export function Idioms() {
   }, [level]);
   const [q, setQ] = useState(null);
   const [sel, setSel] = useState(null);
+  const [cut, setCut] = useState([]);
   const [score, setScore] = useState(0);
   const [total, setTotal] = useState(0);
 
@@ -643,6 +775,7 @@ export function Idioms() {
     const wrongs = shuffle(pool.filter((x) => x.id !== w.id)).slice(0, 3);
     setQ({ w, options: shuffle([w, ...wrongs]) });
     setSel(null);
+    setCut([]);
   }
   useEffect(() => { if (pool.length) next(); }, [pool]);
 
@@ -669,13 +802,21 @@ export function Idioms() {
         {q.options.map((o) => (
           <button
             key={o.id}
-            className={'opt' + (sel ? (o.id === q.w.id ? ' good-opt' : o.id === sel.id ? ' bad-opt' : '') : '')}
+            className={'opt' + (sel ? (o.id === q.w.id ? ' good-opt' : o.id === sel.id ? ' bad-opt' : '') : cut.includes(o.id) ? ' cut' : '')}
+            disabled={cut.includes(o.id)}
             onClick={() => answer(o)}
           >
             {meaning(o)}
           </button>
         ))}
       </div>
+      {!sel && (
+        <Hint
+          disabled={cut.length > 0}
+          onClick={() => setCut(shuffle(q.options.filter((o) => o.id !== q.w.id)).slice(0, 2).map((o) => o.id))}
+          text={t({ en: 'remove two wrong meanings', tr: 'iki yanlış anlamı ele' })}
+        />
+      )}
       {sel && (
         <div>
           <div className="notice"><i>{q.w.ex}</i> <button className="spk" onClick={() => speak(q.w.ex)}>🔊</button></div>

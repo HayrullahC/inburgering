@@ -8,6 +8,7 @@ import {
 } from './lib.js';
 import { useLang, useT, useUser } from './App.jsx';
 import { GRAMMAR, vocabFor, grammarFor, catsFor } from './data/index.js';
+import { useExamples, exText } from './data/ex/index.js';
 
 const examFiles = import.meta.glob('./data/exams/*/*.json');
 
@@ -147,18 +148,27 @@ export function Vocab() {
   const level = useActiveLevel();
   const [cat, setCat] = useState('all');
   const [q, setQ] = useState('');
+  const [known, setKnown] = useState('all'); // all | hard | learned
+  // 1000 cards at once is 50.000 pixels of scrolling and a sluggish phone, so grow on demand
+  const [limit, setLimit] = useState(60);
   const levelWords = vocabFor(level);
   const cats = catsFor(level);
+  const ex = useExamples(level);
+  const fc = getP('fc', {});
 
   const words = useMemo(() => {
     let w = levelWords;
     if (cat !== 'all') w = w.filter((x) => x.cat === cat);
+    if (known === 'hard') w = w.filter((x) => (fc[x.id] ?? -1) >= 0 && fc[x.id] < 3);
+    if (known === 'learned') w = w.filter((x) => (fc[x.id] || 0) >= 3);
     if (q) {
       const s = q.toLowerCase();
       w = w.filter((x) => x.nl.toLowerCase().includes(s) || x.en.toLowerCase().includes(s) || x.tr.toLowerCase().includes(s));
     }
     return w;
-  }, [cat, q, level]);
+  }, [cat, q, level, known, fc]);
+
+  useEffect(() => setLimit(60), [cat, q, level, known]); // a new filter starts at the top
 
   return (
     <div className="page">
@@ -172,16 +182,54 @@ export function Vocab() {
           ))}
         </select>
       </div>
+      <div className="chip-row">
+        {[
+          ['all', t({ en: 'All', tr: 'Tümü' })],
+          ['hard', '🔴 ' + t({ en: 'Difficult', tr: 'Zorlandıklarım' })],
+          ['learned', '✅ ' + t({ en: 'Learned', tr: 'Öğrendiklerim' })],
+        ].map(([k, label]) => (
+          <button key={k} className={'chip' + (known === k ? ' on' : '')} onClick={() => setKnown(k)}>
+            {label}
+          </button>
+        ))}
+        <span className="chip-count">{words.length}</span>
+      </div>
+      {words.length === 0 && (
+        <div className="notice">
+          {known === 'hard' && t({
+            en: 'Nothing here yet — words land in this list once you mark them "Again" in the flashcard game.',
+            tr: 'Burası henüz boş — kelime kartı oyununda "Tekrar" dediğin kelimeler buraya düşer.',
+          })}
+          {known === 'learned' && t({
+            en: 'Nothing here yet — a word counts as learned after you get it right three times in the flashcard game.',
+            tr: 'Burası henüz boş — bir kelime, kart oyununda üç kez doğru bilince öğrenilmiş sayılır.',
+          })}
+          {known === 'all' && t({ en: 'No word matches your search.', tr: 'Aramanla eşleşen kelime yok.' })}
+        </div>
+      )}
       <div className="grid vocab-grid">
-        {words.map((w) => (
+        {words.slice(0, limit).map((w) => (
           <div key={w.id} className="card word-card" onClick={() => speak(w.nl)}>
+            {fc[w.id] !== undefined && (
+              <span className="word-badge" title={t({ en: 'flashcard progress', tr: 'kart ilerlemesi' })}>
+                {fc[w.id] >= 3 ? '✅' : '🔴'}
+              </span>
+            )}
             <div className="word-emoji">{w.emoji}</div>
             <div className="word-nl">{w.nl} <Speaker text={w.nl} /></div>
             <div className="word-tr">{lang === 'tr' ? w.tr : w.en}</div>
             <div className="word-ex">{w.ex} <Speaker text={w.ex} /></div>
+            {exText(ex, w, lang) && <div className="word-ex-tr">{exText(ex, w, lang)}</div>}
           </div>
         ))}
       </div>
+      {words.length > limit && (
+        <div style={{ textAlign: 'center' }}>
+          <button className="btn ghost" onClick={() => setLimit(limit + 120)}>
+            {t({ en: `Show more (${words.length - limit} left)`, tr: `Daha fazla göster (${words.length - limit} kaldı)` })}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

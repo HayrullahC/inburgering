@@ -20,6 +20,12 @@ visible criteria with model answers.
 
 **Games:** flashcards (spaced repetition), match pairs, word sprint, type the word,
 sentence builder (word order), de/het trainer, verb forms, dictation, meaning match.
+Every game has a 💡 hint — uncover a letter, remove two wrong answers, place the next
+word, show the shape of the sentence, or (for de/het) the actual grammar rule, offered
+only when that rule really explains the word at hand.
+
+Every example sentence is translated into English and Turkish. The translations live in
+`src/data/ex/` and load only when a screen needs them, so the first page load stays small.
 
 ## Stack
 

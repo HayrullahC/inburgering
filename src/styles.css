@@ -243,6 +243,35 @@ a.card:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(28, 35, 
   font-family: inherit;
   resize: vertical;
 }
+/* hints in games */
+.hint-row { display: flex; gap: 10px; align-items: center; justify-content: center; flex-wrap: wrap; margin: 14px 0; }
+.hint-btn {
+  border: 1px dashed var(--brand);
+  background: #f5f8ff;
+  color: var(--brand);
+  border-radius: 999px;
+  padding: 7px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.hint-btn:disabled { opacity: 0.4; cursor: default; }
+.hint-text { color: var(--mut); font-size: 13px; }
+.mask { letter-spacing: 3px; font-size: 17px; color: var(--ink); font-weight: 700; }
+.opt.cut { opacity: 0.25; text-decoration: line-through; }
+.match-tile.glow { border-color: var(--brand2); background: #fff7ed; }
+
+/* word list: example translation + progress filter */
+.word-ex-tr { color: var(--mut); font-size: 13px; margin-top: 2px; }
+.word-card { position: relative; }
+.word-badge { position: absolute; top: 8px; right: 10px; font-size: 12px; opacity: 0.85; }
+.fc-ex { font-size: 15px; margin-top: 6px; }
+.fc-ex-tr { color: var(--mut); font-size: 13px; margin-top: 2px; }
+.fc-clue { font-style: italic; color: var(--mut); font-size: 14px; margin-top: 8px; }
+.chip-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 4px 0 14px; }
+.chip.on { border-color: var(--brand); background: #e8edfb; color: var(--brand); font-weight: 700; }
+.chip-count { color: var(--mut); font-size: 13px; margin-left: auto; }
+
 .chk { list-style: none; padding: 0; margin: 8px 0; }
 .chk li { margin: 4px 0; }
 

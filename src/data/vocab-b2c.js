@@ -124,7 +124,7 @@ export const VOCAB_B2C = [
   { id: 3122, nl: 'de gedragsverandering', en: 'the behaviour change', tr: 'davranış değişimi', ex: 'Gedragsverandering vraagt meer dan alleen informatie.', emoji: '🔄', cat: 'psychology', level: 'B2' },
   { id: 3123, nl: 'de gewenning', en: 'the habituation', tr: 'alışma', ex: 'Na een tijdje treedt gewenning op en valt het geluid niet meer op.', emoji: '🔁', cat: 'psychology', level: 'B2' },
   { id: 3124, nl: 'de motivatie aanwakkeren', en: 'to spark motivation', tr: 'motivasyonu körüklemek', ex: 'Kleine successen wakkeren de motivatie aan.', emoji: '🔥', cat: 'psychology', level: 'B2' },
-  { id: 3125, nl: 'de groepsdruk', en: 'the peer pressure', tr: 'akran baskısı', ex: 'Onder groepsdruk nemen mensen grotere risico is.', emoji: '👥', cat: 'psychology', level: 'B2' },
+  { id: 3125, nl: 'de groepsdruk', en: 'the peer pressure', tr: 'akran baskısı', ex: 'Onder groepsdruk nemen mensen meer risico.', emoji: '👥', cat: 'psychology', level: 'B2' },
   { id: 3126, nl: 'de bevestiging zoeken', en: 'to seek validation', tr: 'onay aramak', ex: 'Online zoeken veel mensen voortdurend bevestiging.', emoji: '👍', cat: 'psychology', level: 'B2' },
   { id: 3127, nl: 'zich staande houden', en: 'to keep going / hold your own', tr: 'ayakta kalmak', ex: 'Ondanks alle tegenslag wist zij zich staande te houden.', emoji: '🧍', cat: 'idioms', level: 'B2' },
   { id: 3128, nl: 'de knoop ontwarren', en: 'to untangle the problem', tr: 'düğümü çözmek', ex: 'Een bemiddelaar moest de knoop ontwarren.', emoji: '🪢', cat: 'idioms', level: 'B2' },
