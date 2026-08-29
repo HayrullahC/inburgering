@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useState, useSyncExternalS
 import { Routes, Route, NavLink, Link, useNavigate } from 'react-router-dom';
 import { supa, subscribe, getAll, getP, setP, onLogin, onLogout, LEVELS } from './lib.js';
 import {
-  Home, Vocab, Grammar, GrammarTopic, Exams, ExamList, ExamRunner, Auth, ResetPassword, Info, Placement,
+  Home, Vocab, Grammar, GrammarTopic, Exams, ExamList, ExamRunner, Auth, ResetPassword, Info, Placement, StartRoute,
 } from './pages.jsx';
 import { GamesHome, Flashcards, MatchGame, Sprint, Spell, Sentence, Article, VerbGame, Dictation, Idioms } from './games.jsx';
 import { AdminPage, FeedbackWidget, isAdmin } from './admin.jsx';
@@ -10,6 +10,7 @@ import { AdminPage, FeedbackWidget, isAdmin } from './admin.jsx';
 // ---------- i18n ----------
 const UI = {
   home: { en: 'Home', tr: 'Ana Sayfa' },
+  start: { en: 'Start here', tr: 'Buradan başla' },
   vocab: { en: 'Words', tr: 'Kelimeler' },
   grammar: { en: 'Grammar', tr: 'Gramer' },
   exams: { en: 'Exams', tr: 'Sınavlar' },
@@ -89,6 +90,7 @@ export default function App() {
           )}
           {!locked && <nav>
             <NavLink to="/">{t('home')}</NavLink>
+            <NavLink to="/start">{t('start')}</NavLink>
             <NavLink to="/vocab">{t('vocab')}</NavLink>
             <NavLink to="/grammar">{t('grammar')}</NavLink>
             <NavLink to="/exams">{t('exams')}</NavLink>
@@ -138,6 +140,7 @@ export default function App() {
             <Route path="/reset" element={<ResetPassword />} />
             <Route path="/info" element={<Info />} />
             <Route path="/placement" element={<Placement />} />
+            <Route path="/start" element={<StartRoute />} />
             <Route path="/admin" element={<AdminPage />} />
           </Routes>
           )}

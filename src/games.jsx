@@ -9,6 +9,20 @@ import { VERBS } from './data/verbs.js';
 // Every game works on the words of the level the user is currently studying.
 const lw = () => vocabFor(getP('level', 'A2'));
 
+// The start route counts a game task as done once the game has actually been opened.
+function useMarkPlayed(game) {
+  useEffect(() => {
+    if (!getP('played:' + game)) setP('played:' + game, true);
+  }, [game]);
+}
+
+// Flashcards can be pointed at one category by the start route: /games/flashcards?cat=basis
+function catParam() {
+  if (typeof window === 'undefined') return null;
+  const q = window.location.hash.split('?')[1];
+  return q ? new URLSearchParams(q).get('cat') : null;
+}
+
 // Shared hint button: every game offers a nudge instead of leaving you stuck.
 function Hint({ onClick, disabled, text }) {
   const t = useT();
@@ -71,12 +85,17 @@ export function Flashcards() {
   const [clue, setClue] = useState(false);
   const [doneCount, setDoneCount] = useState(0);
 
+  useMarkPlayed('flashcards');
+  const cat = catParam();
+
   useEffect(() => {
     const fc = getP('fc', {});
+    // the start route can aim this at a single category; otherwise the whole level
+    const pool = cat ? lw().filter((w) => w.cat === cat) : lw();
     // lowest box first, then shuffle within, take 20
-    const sorted = shuffle(lw()).sort((a, b) => (fc[a.id] || 0) - (fc[b.id] || 0));
+    const sorted = shuffle(pool.length ? pool : lw()).sort((a, b) => (fc[a.id] || 0) - (fc[b.id] || 0));
     setQueue(sorted.slice(0, 20));
-  }, []);
+  }, [cat]);
 
   if (!queue) return null;
   if (queue.length === 0) {
@@ -143,6 +162,7 @@ export function Flashcards() {
 
 // ---------------- Match pairs ----------------
 export function MatchGame() {
+  useMarkPlayed('match');
   const lang = useLang();
   const t = useT();
   const [tiles, setTiles] = useState([]);
@@ -237,6 +257,7 @@ export function MatchGame() {
 
 // ---------------- Word sprint (60s) ----------------
 export function Sprint() {
+  useMarkPlayed('sprint');
   const lang = useLang();
   const t = useT();
   const [time, setTime] = useState(60);
@@ -317,6 +338,7 @@ export function Sprint() {
 
 // ---------------- Type the word ----------------
 export function Spell() {
+  useMarkPlayed('spell');
   const lang = useLang();
   const t = useT();
   const [round, setRound] = useState(0);
@@ -409,6 +431,7 @@ function Score({ score, total, best }) {
 
 // ---------------- Sentence builder (word order) ----------------
 export function Sentence() {
+  useMarkPlayed('sentence');
   const t = useT();
   const lang = useLang();
   const level = getP('level', 'A2');
@@ -524,6 +547,7 @@ function articleTip(nl, t) {
 
 // ---------------- De or het ----------------
 export function Article() {
+  useMarkPlayed('article');
   const t = useT();
   const lang = useLang();
   const level = getP('level', 'A2');
@@ -591,6 +615,7 @@ export function Article() {
 
 // ---------------- Verb forms ----------------
 export function VerbGame() {
+  useMarkPlayed('verbs');
   const t = useT();
   const lang = useLang();
   const level = getP('level', 'A2');
@@ -677,6 +702,7 @@ export function VerbGame() {
 
 // ---------------- Dictation ----------------
 export function Dictation() {
+  useMarkPlayed('dictation');
   const t = useT();
   const level = getP('level', 'A2');
   const bank = useMemo(() => {
@@ -754,6 +780,7 @@ export function Dictation() {
 
 // ---------------- Meaning match (idioms & hard words) ----------------
 export function Idioms() {
+  useMarkPlayed('idioms');
   const t = useT();
   const lang = useLang();
   const level = getP('level', 'A2');

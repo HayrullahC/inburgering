@@ -7,7 +7,8 @@ import {
   LEVELS, getLevel, levelModules, examCount, examKey,
 } from './lib.js';
 import { useLang, useT, useUser } from './App.jsx';
-import { GRAMMAR, vocabFor, grammarFor, catsFor } from './data/index.js';
+import { GRAMMAR, CATS, vocabFor, grammarFor, catsFor } from './data/index.js';
+import { buildRoute } from './data/startroute.js';
 import { useExamples, exText } from './data/ex/index.js';
 
 const examFiles = import.meta.glob('./data/exams/*/*.json');
@@ -82,6 +83,40 @@ export function AudioPlayer({ text, rate = 0.85, playLabel }) {
   );
 }
 
+// The "what do I do next" card: the single most useful thing on the home page for
+// someone who has just arrived and is staring at 1100 words.
+function RouteCard() {
+  const t = useT();
+  const { steps, doneCount, current } = useRoute();
+  const next = current?.tasks.find((task) => !task.done);
+
+  return (
+    <Link to="/start" className="route-card">
+      <div className="route-card-head">
+        <span>🚩 {t({ en: 'Start route', tr: 'Başlangıç yolu' })}</span>
+        <span>{doneCount}/{steps.length}</span>
+      </div>
+      <div className="bar"><div style={{ width: (doneCount / steps.length) * 100 + '%' }} /></div>
+      {current ? (
+        <>
+          <div className="route-card-next">
+            {t({ en: 'Next', tr: 'Sıradaki' })}: <b>{t(current.title)}</b>
+          </div>
+          {next && (
+            <div className="route-card-task">
+              {next.icon} {next.label ? t(next.label) : ''} {next.progress && !next.done ? `(${next.progress})` : ''}
+            </div>
+          )}
+        </>
+      ) : (
+        <div className="route-card-next">
+          🎉 {t({ en: 'Route complete — keep practising exams.', tr: 'Rota tamamlandı — sınav pratiğine devam.' })}
+        </div>
+      )}
+    </Link>
+  );
+}
+
 // ---------------- Home ----------------
 export function Home() {
   const lang = useLang();
@@ -117,6 +152,8 @@ export function Home() {
         <div className="stat"><b>{gramDone}</b><span>/{lessons.length} {t({ en: 'grammar topics', tr: 'gramer konusu' })}</span></div>
         <div className="stat"><b>{passed}</b><span>/{totalExams} {t({ en: 'exams passed', tr: 'geçilen sınav' })}</span></div>
       </div>
+
+      <RouteCard />
 
       <h2>{t({ en: 'Exam modules', tr: 'Sınav modülleri' })}</h2>
       <div className="grid">
@@ -863,6 +900,137 @@ export function ResetPassword() {
         <button className="btn">{t({ en: 'Save', tr: 'Kaydet' })}</button>
       </form>
       {msg && <div className="notice err">{msg}</div>}
+    </div>
+  );
+}
+
+// ---------------- Start route: the answer to "where do I begin?" ----------------
+const GAME_LABEL = {
+  flashcards: { icon: '🃏', en: 'Flashcards', tr: 'Kelime Kartları' },
+  match: { icon: '🧩', en: 'Match pairs', tr: 'Eşleştirme' },
+  sprint: { icon: '⚡', en: 'Word sprint', tr: 'Kelime Sprinti' },
+  spell: { icon: '⌨️', en: 'Type the word', tr: 'Kelimeyi Yaz' },
+  sentence: { icon: '🔤', en: 'Sentence builder', tr: 'Cümle Kurma' },
+  article: { icon: '🚦', en: 'De or het?', tr: 'De mi het mi?' },
+  verbs: { icon: '🔀', en: 'Verb forms', tr: 'Fiil Çekimleri' },
+  dictation: { icon: '🎧', en: 'Dictation', tr: 'Dikte' },
+  idioms: { icon: '💬', en: 'Meaning match', tr: 'Anlam Eşleştirme' },
+};
+
+// How far along a single task is. Nothing is ticked by hand: a task is done when the
+// work behind it is done, so the route cannot be clicked through without learning.
+function taskState(task, level, words, lessons) {
+  if (task.k === 'grammar') {
+    const lesson = lessons.find((l) => l.id === task.lesson);
+    return { done: !!getP('gram:' + task.lesson), to: '/grammar/' + task.lesson, icon: '🧩', label: lesson?.title };
+  }
+  if (task.k === 'game') {
+    const g = GAME_LABEL[task.game] || { icon: '🎮', en: task.game, tr: task.game };
+    return { done: !!getP('played:' + task.game), to: '/games/' + task.game, icon: g.icon, label: { en: g.en, tr: g.tr } };
+  }
+  if (task.k === 'exam') {
+    const m = MODULES.find((x) => x.id === task.mod);
+    return {
+      done: !!getP(examKey(level, task.mod, task.n)),
+      to: `/exam/${task.mod}/${task.n}`,
+      icon: m?.icon || '📝',
+      label: { en: `${m?.nl} — exam ${task.n}`, tr: `${m?.nl} — sınav ${task.n}` },
+    };
+  }
+  // words: counted as learned once a card has been answered right a couple of times
+  const fc = getP('fc', {});
+  const ids = words.filter((w) => w.cat === task.cat).map((w) => w.id);
+  const known = ids.filter((id) => (fc[id] || 0) >= 2).length;
+  const cat = CATS.find((c) => c.id === task.cat);
+  return {
+    done: known >= task.n,
+    to: `/games/flashcards?cat=${task.cat}`,
+    icon: cat?.icon || '📚',
+    label: {
+      en: `${task.n} words — ${cat?.en || task.cat}`,
+      tr: `${task.n} kelime — ${cat?.tr || task.cat}`,
+    },
+    progress: `${Math.min(known, task.n)}/${task.n}`,
+  };
+}
+
+export function useRoute() {
+  const level = useActiveLevel();
+  const words = vocabFor(level);
+  const lessons = grammarFor(level);
+  const steps = buildRoute(level, lessons, catsFor(level));
+  const withState = steps.map((s) => {
+    const tasks = s.tasks.map((t) => ({ ...t, ...taskState(t, level, words, lessons) }));
+    return { ...s, tasks, done: tasks.every((t) => t.done) };
+  });
+  const doneCount = withState.filter((s) => s.done).length;
+  const current = withState.find((s) => !s.done) || null;
+  return { steps: withState, doneCount, current, level };
+}
+
+export function StartRoute() {
+  const t = useT();
+  const { steps, doneCount, current, level } = useRoute();
+  const [open, setOpen] = useState(current?.id || steps[0]?.id);
+
+  let lastPhase = null;
+
+  return (
+    <div className="page narrow">
+      <h1>🚩 {t({ en: 'Start route', tr: 'Başlangıç yolu' })} <small>{level}</small></h1>
+      <p>
+        {t({
+          en: 'The whole course in order, in small steps. Work through them one by one — each step ticks itself off when the work behind it is actually done.',
+          tr: 'Bütün kurs, sırayla ve küçük adımlarla. Tek tek ilerle — her adım, altındaki iş gerçekten yapılınca kendiliğinden tamamlanır.',
+        })}
+      </p>
+
+      <div className="route-top">
+        <div className="bar"><div style={{ width: (doneCount / steps.length) * 100 + '%' }} /></div>
+        <small>{doneCount}/{steps.length} {t({ en: 'steps done', tr: 'adım tamam' })}</small>
+      </div>
+
+      <div className="route-list">
+        {steps.map((s, i) => {
+          const phaseChanged = t(s.phase) !== lastPhase;
+          lastPhase = t(s.phase);
+          const isOpen = open === s.id;
+          return (
+            <div key={s.id}>
+              {phaseChanged && <h3 className="route-phase">{t(s.phase)}</h3>}
+              <div className={'route-step' + (s.done ? ' done' : '') + (s.id === current?.id ? ' current' : '')}>
+                <button className="route-head" onClick={() => setOpen(isOpen ? null : s.id)}>
+                  <span className="route-n">{s.done ? '✓' : i + 1}</span>
+                  <span className="route-title">{t(s.title)}</span>
+                  <span className="route-caret">{isOpen ? '▾' : '▸'}</span>
+                </button>
+                {isOpen && (
+                  <div className="route-body">
+                    <p className="route-why">{t(s.why)}</p>
+                    {s.tasks.map((task, j) => (
+                      <Link key={j} to={task.to} className={'route-task' + (task.done ? ' done' : '')}>
+                        <span className="task-check">{task.done ? '✅' : '⬜'}</span>
+                        <span className="task-icon">{task.icon}</span>
+                        <span className="task-label">{task.label ? t(task.label) : ''}</span>
+                        {task.progress && !task.done && <span className="task-prog">{task.progress}</span>}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {doneCount === steps.length && (
+        <div className="notice ok">
+          🎉 {t({
+            en: 'Route complete. From here, keep taking practice exams until you pass them comfortably.',
+            tr: 'Rota tamamlandı. Buradan sonra rahatça geçene kadar deneme sınavlarına devam et.',
+          })}
+        </div>
+      )}
     </div>
   );
 }
