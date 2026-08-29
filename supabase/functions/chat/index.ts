@@ -8,15 +8,21 @@
 // Secrets to set (supabase secrets set NAME=value):
 //   GROQ_API_KEY          required
 //   GROQ_MODEL            optional, overrides the default model
-//   AI_DAILY_PER_USER     optional, default 30
-//   AI_DAILY_GLOBAL       optional, default 2000
+//   AI_DAILY_PER_USER     optional, default 15
+//   AI_DAILY_GLOBAL       optional, default 450
+//   AI_PER_MINUTE         optional, default 5
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
 const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const GROQ_KEY = Deno.env.get('GROQ_API_KEY');
-const PER_USER = Number(Deno.env.get('AI_DAILY_PER_USER') ?? 30);
-const GLOBAL_CAP = Number(Deno.env.get('AI_DAILY_GLOBAL') ?? 2000);
+// Groq's free tier gives roughly 200k tokens a day per model and a message costs about
+// 1.2k, so one model is worth ~165 messages. The fallback chain below spreads the load
+// over three models, which is where ~450 comes from. Raising these past what the free
+// tier actually delivers only moves the failure from our error message to Groq's.
+const PER_USER = Number(Deno.env.get('AI_DAILY_PER_USER') ?? 15);
+const GLOBAL_CAP = Number(Deno.env.get('AI_DAILY_GLOBAL') ?? 450);
+const PER_MINUTE = Number(Deno.env.get('AI_PER_MINUTE') ?? 5);
 
 // Primary first, cheaper fallback second. GROQ_MODEL overrides the primary without a
 // redeploy, which matters because hosted model names get retired now and then.
@@ -92,7 +98,7 @@ async function callGroq(model: string, messages: unknown[]) {
       model,
       messages,
       temperature: 0.7,
-      max_tokens: 500,
+      max_tokens: 350,
       response_format: { type: 'json_object' },
     }),
   });
@@ -114,12 +120,15 @@ Deno.serve(async (req) => {
   if (!who.ok) return json({ error: 'auth' }, 401);
   const user = await who.json();
   if (!user?.id) return json({ error: 'auth' }, 401);
+  // an unconfirmed address is a throwaway account: cheap to make, and the shared pool is
+  // small enough that a handful of them would take the day away from real learners
+  if (!user.email_confirmed_at && !user.confirmed_at) return json({ error: 'unconfirmed' }, 403);
 
   const body = await req.json().catch(() => null);
   const level = ['A2', 'B1', 'B2'].includes(body?.level) ? body.level : 'A2';
   const uiLang = body?.uiLang === 'tr' ? 'tr' : 'en';
   const situation = String(body?.situation ?? '').slice(0, 600);
-  const history = Array.isArray(body?.messages) ? body.messages.slice(-12) : [];
+  const history = Array.isArray(body?.messages) ? body.messages.slice(-8) : [];
   if (!situation || !history.length) return json({ error: 'bad_request' }, 400);
 
   const rpc = (fn: string, args: Record<string, unknown>) =>
@@ -137,8 +146,12 @@ Deno.serve(async (req) => {
   const usedToday = (await rpc('ai_usage_today', {})) ?? 0;
   if (usedToday >= GLOBAL_CAP) return json({ error: 'global_quota' }, 429);
 
-  // 3. count this message before spending it
-  const mine = (await rpc('bump_ai_usage', { p_user: user.id })) ?? 1;
+  // 3. count this message before spending it, and check the burst window in the same
+  //    statement so a script cannot slip past between a read and a write
+  const used = (await rpc('bump_ai_usage', { p_user: user.id })) ?? { count: 1, burst: 1 };
+  const mine = used.count ?? 1;
+  const burst = used.burst ?? 1;
+  if (burst > PER_MINUTE) return json({ error: 'too_fast' }, 429);
   if (mine > PER_USER) return json({ error: 'quota', remaining: 0 }, 429);
   const remaining = Math.max(PER_USER - mine, 0);
 

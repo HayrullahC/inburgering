@@ -233,6 +233,14 @@ function ChatError({ code }) {
       en: 'The shared free capacity for today is used up. Try again tomorrow, or practise speaking in the Spreken exams in the meantime.',
       tr: 'Bugünkü ortak ücretsiz kapasite doldu. Yarın tekrar dene, bu arada Spreken sınavlarında konuşma pratiği yapabilirsin.',
     },
+    too_fast: {
+      en: 'Slow down a little — a few messages a minute. The free capacity is shared with everyone.',
+      tr: 'Biraz yavaş — dakikada birkaç mesaj. Ücretsiz kapasite herkesle paylaşılıyor.',
+    },
+    unconfirmed: {
+      en: 'Confirm your email address first (check your inbox for the link). The practice partner is for confirmed accounts only.',
+      tr: 'Önce e-posta adresini onayla (gelen kutundaki bağlantı). Pratik partneri yalnız onaylı hesaplara açık.',
+    },
     not_configured: {
       en: 'The practice partner is not switched on yet. Everything else in the course works as usual.',
       tr: 'Pratik partneri henüz açılmadı. Kurstaki diğer her şey normal çalışıyor.',

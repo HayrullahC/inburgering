@@ -24,23 +24,36 @@ create policy "admin reads usage" on public.ai_usage
 
 -- Deliberately no insert/update/delete policy: only the service-role key writes here.
 
--- One statement the Edge Function calls per message: bump the counter and hand back the
--- new value, so counting and reading cannot drift apart under concurrent requests.
+-- Burst tracking, so one person with a script cannot drain the shared free tier in
+-- twenty seconds. Safe to run again on an existing table.
+alter table public.ai_usage add column if not exists last_at timestamptz;
+alter table public.ai_usage add column if not exists burst int not null default 0;
+
+-- One statement the Edge Function calls per message: bump the daily counter and the
+-- per-minute burst counter together, and hand both back, so counting and reading cannot
+-- drift apart under concurrent requests.
 create or replace function public.bump_ai_usage(p_user uuid)
-returns int
+returns json
 language plpgsql
 security definer
 set search_path = public
 as $$
 declare
-  new_count int;
+  r public.ai_usage%rowtype;
 begin
-  insert into public.ai_usage (user_id, day, count)
-  values (p_user, (now() at time zone 'utc')::date, 1)
-  on conflict (user_id, day)
-    do update set count = public.ai_usage.count + 1
-  returning count into new_count;
-  return new_count;
+  insert into public.ai_usage (user_id, day, count, last_at, burst)
+  values (p_user, (now() at time zone 'utc')::date, 1, now(), 1)
+  on conflict (user_id, day) do update set
+    count = public.ai_usage.count + 1,
+    -- a fresh minute restarts the burst window
+    burst = case
+      when public.ai_usage.last_at > now() - interval '1 minute'
+      then public.ai_usage.burst + 1
+      else 1
+    end,
+    last_at = now()
+  returning * into r;
+  return json_build_object('count', r.count, 'burst', r.burst);
 end;
 $$;
 
