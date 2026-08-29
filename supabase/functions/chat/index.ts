@@ -21,8 +21,9 @@ const GLOBAL_CAP = Number(Deno.env.get('AI_DAILY_GLOBAL') ?? 2000);
 // Primary first, cheaper fallback second. GROQ_MODEL overrides the primary without a
 // redeploy, which matters because hosted model names get retired now and then.
 const MODELS = [
-  Deno.env.get('GROQ_MODEL') || 'llama-3.3-70b-versatile',
-  'llama-3.1-8b-instant',
+  Deno.env.get('GROQ_MODEL') || 'openai/gpt-oss-120b',
+  'groq/compound-mini',
+  'qwen/qwen3.8-27b',
 ];
 
 const CORS = {
@@ -43,6 +44,14 @@ const LEVEL_RULES: Record<string, string> = {
   B2: 'Schrijf drie tot vier zinnen (samen maximaal 70 woorden). Gebruik genuanceerde, iets formelere taal met nevenschikking, passief en verbindingswoorden.',
 };
 
+// Models drift into Dutch when a Dutch prompt asks them to explain in another language,
+// so the rule is stated twice and shown once, with a worked example in the target
+// language. Measured: without the example the explanation came back in Dutch.
+const EXAMPLE = {
+  tr: '{"reply_nl":"Wat vervelend. Sinds wanneer heeft u pijn?","correction":{"original":"Ik heb naar huis gegaan","fixed":"Ik ben naar huis gegaan","why":"Hareket fiilleri (gaan, komen, blijven) perfectumda hebben degil zijn yardimci fiilini alir."},"ask_repeat":true}',
+  en: '{"reply_nl":"Wat vervelend. Sinds wanneer heeft u pijn?","correction":{"original":"Ik heb naar huis gegaan","fixed":"Ik ben naar huis gegaan","why":"Verbs of movement (gaan, komen, blijven) take zijn in the perfect tense, not hebben."},"ask_repeat":true}',
+};
+
 function systemPrompt(level: string, situation: string, uiLang: string) {
   const explain = uiLang === 'tr' ? 'Turks' : 'Engels';
   return `Je bent een Nederlandse gesprekspartner die een cursist laat oefenen voor het inburgeringsexamen / Staatsexamen NT2 op niveau ${level}.
@@ -57,7 +66,12 @@ Eindig je antwoord altijd met één vraag, zodat de cursist verder moet praten.
 
 CORRIGEREN
 Kijk naar het laatste bericht van de cursist. Corrigeer alleen echte fouten in grammatica, woordvolgorde of woordkeuze. Negeer ontbrekende hoofdletters, punten en accenten. Is het Nederlands goed genoeg, laat "correction" dan weg.
-De uitleg bij een correctie schrijf je in het ${explain}, in een zin, en je noemt de regel (bijvoorbeeld: werkwoord op de tweede plaats, de/het, perfectum met hebben).
+Verander de betekenis en de tijd van de zin niet: verbeter alleen wat echt fout is.
+
+Het veld "why" schrijf je VOLLEDIG in het ${explain}. Gebruik geen Nederlandse zin in "why" — alleen losse Nederlandse woorden die je citeert. Noem de regel die misging, bijvoorbeeld: hulpwerkwoord zijn bij gaan/komen/blijven, werkwoord op de tweede plaats, werkwoord achteraan in de bijzin na omdat/dat/als, de of het, bijvoeglijk naamwoord met -e.
+Zo ziet een goed antwoord met uitleg in het ${explain} eruit:
+${uiLang === 'tr' ? EXAMPLE.tr : EXAMPLE.en}
+
 Schrijft de cursist in het Engels of Turks, antwoord dan gewoon in het Nederlands en moedig hem in het ${explain} aan het in het Nederlands te proberen.
 
 ANTWOORD ALLEEN MET JSON, exact in deze vorm:
@@ -148,7 +162,22 @@ Deno.serve(async (req) => {
       lastErr = String(e);
     }
   }
-  if (!raw) return json({ error: 'upstream', detail: lastErr.slice(0, 200), remaining }, 502);
+  if (!raw) {
+    // the learner never got an answer, so the message should not cost them a turn
+    await fetch(
+      `${SUPABASE_URL}/rest/v1/ai_usage?user_id=eq.${user.id}&day=eq.${new Date().toISOString().slice(0, 10)}`,
+      {
+        method: 'PATCH',
+        headers: {
+          apikey: SERVICE_KEY,
+          Authorization: `Bearer ${SERVICE_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ count: Math.max(mine - 1, 0) }),
+      },
+    ).catch(() => {});
+    return json({ error: 'upstream', detail: lastErr.slice(0, 200), remaining: remaining + 1 }, 502);
+  }
 
   let out: Record<string, unknown>;
   try {
