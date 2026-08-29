@@ -1,5 +1,6 @@
 // Single source of truth for course content across all three levels.
 // pages.jsx and games.jsx import from here instead of the individual data files.
+import { VOCAB_A1 } from './vocab-a1.js';
 import { VOCAB as VOCAB_A2, CATS as CATS_A2 } from './vocab.js';
 import { VOCAB_B1A } from './vocab-b1a.js';
 import { VOCAB_B1B } from './vocab-b1b.js';
@@ -9,6 +10,9 @@ import { VOCAB_B2C } from './vocab-b2c.js';
 import { GRAMMAR as GRAMMAR_A2 } from './grammar.js';
 import { GRAMMAR_B1 } from './grammar-b1.js';
 import { GRAMMAR_B2 } from './grammar-b2.js';
+
+// Numbers, months, colours and question words — shown first, before the themed A2 lists.
+const CATS_BASIS = [{ id: 'basis', icon: '🔢', en: 'Numbers & basics', tr: 'Sayılar & temeller' }];
 
 // Categories that only appear from B1 upwards.
 const CATS_ADVANCED = [
@@ -42,6 +46,8 @@ const dedupe = (arr) =>
   });
 
 export const VOCAB = [
+  // numbers, months, colours, question words: the ground floor everything else stands on
+  ...dedupe(VOCAB_A1),
   ...dedupe(withLevel(VOCAB_A2, 'A2')),
   ...dedupe(VOCAB_B1A),
   ...dedupe(VOCAB_B1B),
@@ -56,7 +62,7 @@ export const GRAMMAR = [
   ...GRAMMAR_B2,
 ];
 
-export const CATS = [...CATS_A2, ...CATS_ADVANCED];
+export const CATS = [...CATS_BASIS, ...CATS_A2, ...CATS_ADVANCED];
 
 export const vocabFor = (level) => VOCAB.filter((w) => w.level === level);
 export const grammarFor = (level) => GRAMMAR.filter((l) => l.level === level);

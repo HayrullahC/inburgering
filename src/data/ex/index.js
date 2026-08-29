@@ -42,6 +42,8 @@ export function useExamples(level) {
 
 // The example translation for one word, in the active UI language.
 export function exText(ex, word, lang) {
+  // newer word lists carry their translation inline instead of in a separate file
+  if (word?.exEn || word?.exTr) return lang === 'tr' ? word.exTr || word.exEn : word.exEn || word.exTr;
   const pair = ex?.[word?.id];
   if (!pair) return '';
   return lang === 'tr' ? pair[1] : pair[0];
