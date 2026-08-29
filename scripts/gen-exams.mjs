@@ -7,6 +7,9 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { VOCAB } from '../src/data/vocab.js';
 import { KNM } from '../src/data/knm.js';
+import { LEZEN_A } from './banks/a2-rl-a.mjs';
+import { LEZEN_B } from './banks/a2-rl-b.mjs';
+import { LUISTEREN as A2_LUISTEREN } from './banks/a2-luister.mjs';
 import * as B1RL from './banks/b1-rl.mjs';
 import * as B1WS from './banks/b1-ws.mjs';
 import * as B2RL from './banks/b2-rl.mjs';
@@ -553,21 +556,33 @@ function reshuffle(rnd, base, extra) {
   return fin(rnd, { q: base.q, ...extra }, base.o[base.a], wrongs);
 }
 
-function makeBankRead(rnd, examIdx, bank, pool, field) {
+function makeBankRead(rnd, examIdx, bank, pool, field, count = QUESTIONS) {
   if (!bank?.length) throw new Error('empty source bank — did scripts/banks/*.mjs finish?');
   const qs = [];
   let ti = examIdx * 3;
-  while (qs.length < QUESTIONS) {
+  while (qs.length < count) {
     const t = bank[ti % bank.length];
     const body = t.title ? `${t.title}\n\n${t.text}` : t.text || t.script;
     const ref = field === 'pi' ? { pi: pool.add(body) } : { li: pool.add(body) };
     for (const bq of shuffleS(rnd, t.qs)) {
-      if (qs.length >= QUESTIONS) break;
+      if (qs.length >= count) break;
       qs.push(reshuffle(rnd, bq, ref));
     }
     ti++;
   }
   return qs;
+}
+
+// A2 users compared us with the official exams and found the generated texts short and
+// samey. The fix is a hybrid: most of each exam comes from an authored bank written at
+// official length and difficulty, topped up with a few template questions — short
+// notices with a changing time or price are a genuine part of the real exam, so they
+// keep a minority share rather than disappearing.
+const A2_LEZEN = [...LEZEN_A, ...LEZEN_B];
+function makeMixedRead(rnd, examIdx, bank, templates, pool, field, bankShare) {
+  const fromBank = makeBankRead(rnd, examIdx, bank, pool, field, bankShare);
+  const fromTemplates = makeFromTemplates(rnd, templates).slice(0, QUESTIONS - fromBank.length);
+  return [...fromBank, ...fromTemplates];
 }
 
 function cycle(arr, examIdx, offset, count) {
@@ -605,8 +620,8 @@ function makeBankSpreken(_rnd, examIdx, bank) {
 const BUILDERS = {
   A2: {
     exams: 50,
-    lezen: (rnd) => makeFromTemplates(rnd, LEZEN_TEMPLATES),
-    luisteren: (rnd) => makeFromTemplates(rnd, LUISTEREN_TEMPLATES),
+    lezen: (rnd, e, pool) => makeMixedRead(rnd, e, A2_LEZEN, LEZEN_TEMPLATES, pool, 'pi', 18),
+    luisteren: (rnd, e, pool) => makeMixedRead(rnd, e, A2_LUISTEREN, LUISTEREN_TEMPLATES, pool, 'li', 16),
     schrijven: makeSchrijven,
     spreken: makeSpreken,
     knm: (rnd, e) => makeKnm(rnd, e),

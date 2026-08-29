@@ -112,7 +112,7 @@ Every push to `main` builds and deploys to GitHub Pages automatically
   `{ id, nl, en, tr, ex, emoji, cat, level }`
 - `src/data/grammar.js` (30 A2) + `grammar-b1.js` (22) + `grammar-b2.js` (20 style & argumentation lessons)
 - `src/data/verbs.js` — irregular verb table for the conjugation game
-- `scripts/banks/*.mjs` — authored B1/B2 source material: reading texts, listening scripts,
+- `scripts/banks/*.mjs` — authored A2/B1/B2 source material: reading texts, listening scripts,
   writing tasks and speaking tasks the generator slices into exams
 - `src/data/knm.js` — KNM question bank
 - `scripts/gen-exams.mjs` — deterministic exam generator → `src/data/exams/*.json`
