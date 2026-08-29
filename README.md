@@ -65,6 +65,34 @@ Brevo → **SMTP & API** → generate an SMTP key, then Supabase → **Project S
 Authentication → SMTP Settings**: host `smtp-relay.brevo.com`, port `587`, the Brevo SMTP
 login as username, the key as password. Then raise the limit under **Authentication → Rate Limits**.
 
+## AI practice partner (free)
+
+A conversation partner that stays inside an exam-like situation (doctor, town hall, shop,
+neighbours, work, phone, school, housing), corrects what you wrote and explains why in
+your interface language. Speech in and out uses the browser, so only the text model costs
+anything — and that runs on Groq's free tier.
+
+The site is a static build in a public repo, so the API key cannot live in the frontend.
+It lives in a Supabase Edge Function instead, which also checks that the caller is a
+logged-in member and counts their daily messages.
+
+1. Run `supabase/ai.sql` once in the Supabase SQL Editor (creates the quota table).
+2. Get a free API key at [console.groq.com](https://console.groq.com) (no card needed).
+3. Install the CLI and log in: `npm i -g supabase` then `supabase login`.
+4. From the repo root:
+
+```bash
+supabase link --project-ref dbsepyzkcucowiqfayva
+supabase secrets set GROQ_API_KEY=gsk_your_key_here
+supabase functions deploy chat
+```
+
+Optional secrets: `GROQ_MODEL` (override the model without redeploying),
+`AI_DAILY_PER_USER` (default 30), `AI_DAILY_GLOBAL` (default 2000).
+
+Until the function is deployed the Practice tab still opens and explains that the partner
+is not switched on yet — nothing else in the course is affected.
+
 ## Captcha (Cloudflare Turnstile, free)
 
 1. Go to [dash.cloudflare.com](https://dash.cloudflare.com) → **Turnstile** → *Add widget* (hostname: `hayrullahc.github.io`, mode: Managed).

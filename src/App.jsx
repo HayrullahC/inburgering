@@ -6,6 +6,7 @@ import {
 } from './pages.jsx';
 import { GamesHome, Flashcards, MatchGame, Sprint, Spell, Sentence, Article, VerbGame, Dictation, Idioms } from './games.jsx';
 import { AdminPage, FeedbackWidget, isAdmin } from './admin.jsx';
+import { Practice } from './practice.jsx';
 
 // ---------- i18n ----------
 const UI = {
@@ -15,6 +16,7 @@ const UI = {
   grammar: { en: 'Grammar', tr: 'Gramer' },
   exams: { en: 'Exams', tr: 'Sınavlar' },
   games: { en: 'Games', tr: 'Oyunlar' },
+  practice: { en: 'Practice', tr: 'Pratik' },
   info: { en: 'Exam Info', tr: 'Sınav Bilgisi' },
   account: { en: 'Account', tr: 'Hesap' },
   login: { en: 'Log in', tr: 'Giriş' },
@@ -94,6 +96,7 @@ export default function App() {
             <NavLink to="/vocab">{t('vocab')}</NavLink>
             <NavLink to="/grammar">{t('grammar')}</NavLink>
             <NavLink to="/exams">{t('exams')}</NavLink>
+            <NavLink to="/practice">🗣️ {t('practice')}</NavLink>
             <NavLink to="/games">{t('games')}</NavLink>
             <NavLink to="/info">{t('info')}</NavLink>
             {isAdmin(user) && <NavLink to="/admin">⚙️</NavLink>}
@@ -141,6 +144,7 @@ export default function App() {
             <Route path="/info" element={<Info />} />
             <Route path="/placement" element={<Placement />} />
             <Route path="/start" element={<StartRoute />} />
+            <Route path="/practice" element={<Practice />} />
             <Route path="/admin" element={<AdminPage />} />
           </Routes>
           )}
