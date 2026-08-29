@@ -20,9 +20,15 @@ const GROQ_KEY = Deno.env.get('GROQ_API_KEY');
 // 1.2k, so one model is worth ~165 messages. The fallback chain below spreads the load
 // over three models, which is where ~450 comes from. Raising these past what the free
 // tier actually delivers only moves the failure from our error message to Groq's.
-const PER_USER = Number(Deno.env.get('AI_DAILY_PER_USER') ?? 15);
-const GLOBAL_CAP = Number(Deno.env.get('AI_DAILY_GLOBAL') ?? 450);
+const PER_USER = Number(Deno.env.get('AI_DAILY_PER_USER') ?? 50);
 const PER_MINUTE = Number(Deno.env.get('AI_PER_MINUTE') ?? 5);
+// The real ceiling is Groq's own daily limit on each model in MODELS, and the chain
+// below moves to the next model when one is spent. A number of our own would only close
+// the door early, so this is a runaway guard, not a capacity estimate.
+const GLOBAL_CAP = Number(Deno.env.get('AI_DAILY_GLOBAL') ?? 5000);
+// Roughly what one model's free tier is worth. Not a limit: past this point the per-user
+// cap tightens so the pool keeps something for whoever studies later in the day.
+const SOFT_POOL = Number(Deno.env.get('AI_SOFT_POOL') ?? 450);
 
 // Primary first, cheaper fallback second. GROQ_MODEL overrides the primary without a
 // redeploy, which matters because hosted model names get retired now and then.
@@ -31,6 +37,11 @@ const MODELS = [
   'groq/compound-mini',
   'qwen/qwen3.8-27b',
 ];
+
+// Which models have said "no room" recently. Instance-local, so a cold start simply
+// retries them — that is fine, and cheaper than a wrong shared cache.
+const spent = new Map<string, number>();
+const SPENT_FOR = 15 * 60 * 1000;
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -146,14 +157,21 @@ Deno.serve(async (req) => {
   const usedToday = (await rpc('ai_usage_today', {})) ?? 0;
   if (usedToday >= GLOBAL_CAP) return json({ error: 'global_quota' }, 429);
 
+  // A fixed per-user cap is either mean on a quiet day or unfair on a busy one: whoever
+  // logs in first eats the pool and everyone after them finds the door shut. So the cap
+  // is generous while the pool is mostly free and tightens as it drains, which keeps
+  // something left for the people who study in the evening.
+  const load = usedToday / SOFT_POOL;
+  const cap = load < 0.6 ? PER_USER : load < 0.85 ? Math.min(PER_USER, 20) : Math.min(PER_USER, 10);
+
   // 3. count this message before spending it, and check the burst window in the same
   //    statement so a script cannot slip past between a read and a write
   const used = (await rpc('bump_ai_usage', { p_user: user.id })) ?? { count: 1, burst: 1 };
   const mine = used.count ?? 1;
   const burst = used.burst ?? 1;
   if (burst > PER_MINUTE) return json({ error: 'too_fast' }, 429);
-  if (mine > PER_USER) return json({ error: 'quota', remaining: 0 }, 429);
-  const remaining = Math.max(PER_USER - mine, 0);
+  if (mine > cap) return json({ error: 'quota', remaining: 0, busy: load >= 0.6 }, 429);
+  const remaining = Math.max(cap - mine, 0);
 
   const messages = [
     { role: 'system', content: systemPrompt(level, situation, uiLang) },
@@ -167,12 +185,20 @@ Deno.serve(async (req) => {
 
   let raw = '';
   let lastErr = '';
+  let allRateLimited = true;
   for (const model of MODELS) {
+    if (Date.now() < (spent.get(model) ?? 0)) continue; // known empty, do not spend a round trip
     try {
       raw = await callGroq(model, messages);
-      if (raw) break;
+      if (raw) {
+        allRateLimited = false;
+        break;
+      }
     } catch (e) {
       lastErr = String(e);
+      // 429 means this model's free tier is done for now; the next one may still have room
+      if (lastErr.includes('groq 429')) spent.set(model, Date.now() + SPENT_FOR);
+      else allRateLimited = false;
     }
   }
   if (!raw) {
@@ -189,7 +215,12 @@ Deno.serve(async (req) => {
         body: JSON.stringify({ count: Math.max(mine - 1, 0) }),
       },
     ).catch(() => {});
-    return json({ error: 'upstream', detail: lastErr.slice(0, 200), remaining: remaining + 1 }, 502);
+    // every model rate-limited is a different story from a broken call: the free tier is
+    // simply used up for now, and the learner should be told that, not "try again"
+    return json(
+      { error: allRateLimited ? 'capacity' : 'upstream', detail: lastErr.slice(0, 200), remaining: remaining + 1 },
+      allRateLimited ? 429 : 502,
+    );
   }
 
   let out: Record<string, unknown>;

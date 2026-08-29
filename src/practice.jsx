@@ -233,6 +233,10 @@ function ChatError({ code }) {
       en: 'The shared free capacity for today is used up. Try again tomorrow, or practise speaking in the Spreken exams in the meantime.',
       tr: 'Bugünkü ortak ücretsiz kapasite doldu. Yarın tekrar dene, bu arada Spreken sınavlarında konuşma pratiği yapabilirsin.',
     },
+    capacity: {
+      en: 'All the free models are busy right now. This usually clears within the hour — the Spreken exams work in the meantime.',
+      tr: 'Şu an tüm ücretsiz modeller dolu. Genelde bir saat içinde açılıyor — bu arada Spreken sınavları çalışıyor.',
+    },
     too_fast: {
       en: 'Slow down a little — a few messages a minute. The free capacity is shared with everyone.',
       tr: 'Biraz yavaş — dakikada birkaç mesaj. Ücretsiz kapasite herkesle paylaşılıyor.',
@@ -263,7 +267,7 @@ function ChatError({ code }) {
   return (
     <div className="notice err">
       {t(msg)}
-      {(code === 'quota' || code === 'global_quota') && (
+      {['quota','global_quota','capacity'].includes(code) && (
         <div style={{ marginTop: 8 }}>
           <Link className="btn ghost" to="/exams/spreken">🗣️ {t({ en: 'Spreken exams', tr: 'Spreken sınavları' })}</Link>
         </div>
