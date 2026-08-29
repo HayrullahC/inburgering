@@ -530,6 +530,28 @@ a.card:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(28, 35, 
 
 .footer { text-align: center; color: var(--mut); font-size: 13px; padding: 20px; }
 
+/* support: FAQ + tickets */
+.faq-item {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin: 8px 0;
+}
+.faq-item summary { cursor: pointer; font-weight: 600; }
+.faq-item p { margin: 10px 0 4px; line-height: 1.55; }
+.ticket-row { display: block; width: 100%; text-align: left; padding: 4px 0; }
+.ticket-new, .ticket-reply { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; }
+.ticket-new select, .ticket-new input, .ticket-new textarea, .ticket-reply textarea {
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+}
+.ticket-thread { margin-top: 10px; }
+.ticket-who { display: block; color: var(--mut); margin-bottom: 4px; }
+
 /* games */
 .fc-card {
   background: var(--card);

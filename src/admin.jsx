@@ -5,6 +5,7 @@ import { supa, LEVELS } from './lib.js';
 const TOTAL_EXAMS = LEVELS.reduce((n, l) => n + l.modules.length * l.exams, 0);
 import { ADMIN_EMAILS } from './config.js';
 import { useT, useUser } from './App.jsx';
+import { TicketThread, STATUS_LABEL } from './support.jsx';
 
 export function isAdmin(user) {
   return !!user && ADMIN_EMAILS.includes(user.email);
@@ -91,11 +92,14 @@ export function AdminPage() {
         <button className={'btn ' + (tab === 'feedback' ? '' : 'ghost')} onClick={() => setTab('feedback')}>
           💬 Feedback
         </button>
+        <button className={'btn ' + (tab === 'tickets' ? '' : 'ghost')} onClick={() => setTab('tickets')}>
+          🎫 Tickets
+        </button>
         <button className={'btn ' + (tab === 'users' ? '' : 'ghost')} onClick={() => setTab('users')}>
           👥 {t({ en: 'Users', tr: 'Kullanıcılar' })}
         </button>
       </div>
-      {tab === 'feedback' ? <FeedbackInbox /> : <UserStats />}
+      {tab === 'feedback' ? <FeedbackInbox /> : tab === 'tickets' ? <TicketInbox /> : <UserStats />}
     </div>
   );
 }
@@ -145,6 +149,56 @@ function FeedbackInbox() {
               : <button className="linklike" onClick={() => setStatus(r.id, 'new')}>↩ {t({ en: 'Reopen', tr: 'Geri aç' })}</button>}
             <button className="linklike" onClick={() => remove(r.id)}>🗑 {t({ en: 'Delete', tr: 'Sil' })}</button>
           </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function TicketInbox() {
+  const t = useT();
+  const [rows, setRows] = useState(null);
+  const [filter, setFilter] = useState('open');
+  const [openId, setOpenId] = useState(null);
+
+  async function load() {
+    const { data, error } = await supa.from('tickets').select('*').order('updated_at', { ascending: false });
+    setRows(error ? [] : data);
+  }
+  useEffect(() => { load(); }, []);
+
+  async function remove(id) {
+    if (!confirm(t({ en: 'Delete this ticket and its replies?', tr: 'Bu ticket ve yanıtları silinsin mi?' }))) return;
+    await supa.from('tickets').delete().eq('id', id);
+    load();
+  }
+
+  if (!rows) return <p>…</p>;
+  const shown = filter === 'all' ? rows : rows.filter((r) => r.status === filter);
+  const topicIcon = { audio: '🔊', account: '👤', exam: '📝', ai: '🗣️', other: '💬' };
+
+  return (
+    <div>
+      <div className="row-btns">
+        {['open', 'answered', 'closed', 'all'].map((f) => (
+          <button key={f} className={'linklike ' + (filter === f ? 'active-filter' : '')} onClick={() => setFilter(f)}>
+            {f} ({f === 'all' ? rows.length : rows.filter((r) => r.status === f).length})
+          </button>
+        ))}
+      </div>
+      {shown.length === 0 && <p>{t({ en: 'Nothing here.', tr: 'Burada bir şey yok.' })}</p>}
+      {shown.map((r) => (
+        <div key={r.id} className={'rev ' + (r.status === 'open' ? 'fail' : r.status === 'answered' ? 'ok' : '')}>
+          <button className="linklike ticket-row" onClick={() => setOpenId(openId === r.id ? null : r.id)}>
+            <b>{topicIcon[r.topic] || '💬'} {r.subject}</b>{' '}
+            <small>{r.email} · {t(STATUS_LABEL[r.status] || STATUS_LABEL.open)} · {new Date(r.updated_at).toLocaleString()}</small>
+          </button>
+          {openId === r.id && (
+            <>
+              <TicketThread ticket={r} asAdmin onChanged={load} />
+              <button className="linklike" onClick={() => remove(r.id)}>🗑 {t({ en: 'Delete', tr: 'Sil' })}</button>
+            </>
+          )}
         </div>
       ))}
     </div>

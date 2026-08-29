@@ -57,6 +57,14 @@ table (the in-app 💬 button writes there) and gives the admin email (see `is_a
 that file and `ADMIN_EMAILS` in `src/config.js`) access to the `/admin` panel: feedback
 inbox + user stats.
 
+## Support tickets & FAQ
+
+Run `supabase/tickets.sql` once (after `feedback.sql`). The `/support` page then offers a
+bilingual FAQ (voice installation, microphone, email delivery, quotas…) and a ticket system:
+members open tickets and read replies there, the admin answers from the Tickets tab in
+`/admin`. Flood protection is server-side: max 5 tickets and 30 replies per user per day,
+2000-character messages.
+
 ## Email sending (SMTP, free)
 
 Supabase's built-in mailer sends only ~2 emails/hour — enough for testing only.
