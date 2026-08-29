@@ -36,6 +36,16 @@ function Hint({ onClick, disabled, text }) {
   );
 }
 
+// Translation of a practice sentence, resolved at render rather than when the round
+// starts: the translation file loads lazily, so looking it up early misses it.
+function sentenceTr(item, ex, lang) {
+  if (!item) return '';
+  const pair = ex?.[item.id];
+  const en = item.en || pair?.[0];
+  const tr = item.tr || pair?.[1];
+  return (lang === 'tr' ? tr || en : en || tr) || '';
+}
+
 // "h _ _ s" — reveals the first n letters, keeps spaces visible.
 function masked(word, n) {
   return word
@@ -435,6 +445,7 @@ export function Sentence() {
   const t = useT();
   const lang = useLang();
   const level = getP('level', 'A2');
+  const ex = useExamples(level);
   const [item, setItem] = useState(null);
   const [pick, setPick] = useState([]);
   const [pool, setPool] = useState([]);
@@ -448,7 +459,7 @@ export function Sentence() {
         .map((e) => ({ nl: e.nl, en: e.en, tr: e.tr })));
     const fromWords = lw()
       .filter((w) => w.ex.split(' ').length >= 4 && w.ex.split(' ').length <= 10)
-      .map((w) => ({ nl: w.ex }));
+      .map((w) => ({ nl: w.ex, id: w.id, en: w.exEn, tr: w.exTr }));
     return [...fromGrammar, ...fromWords];
   }, [level]);
 
@@ -476,7 +487,6 @@ export function Sentence() {
       <h1>🔤 {t({ en: 'Sentence builder', tr: 'Cümle Kurma' })}</h1>
       <Score score={score} total={total} />
       <p>{t({ en: 'Tap the words in the correct order.', tr: 'Kelimelere doğru sırayla dokun.' })}</p>
-      {(item.en || item.tr) && <p className="fc-hint">{lang === 'tr' ? item.tr : item.en}</p>}
 
       <div className={'build-line ' + (state || '')}>
         {pick.length === 0 ? <span className="fc-hint">…</span> : pick.map((w, i) => (
@@ -515,9 +525,17 @@ export function Sentence() {
       ) : (
         <div>
           <div className={'notice ' + (state === 'ok' ? 'ok' : 'err')}>
-            {state === 'ok'
-              ? '✔ ' + t({ en: 'Correct!', tr: 'Doğru!' })
-              : '✘ ' + item.nl}
+            {state === 'ok' ? (
+              <>
+                <div>✔ {t({ en: 'Correct!', tr: 'Doğru!' })} <b>{item.nl}</b></div>
+                {/* the meaning is the reward for getting the order right, not a hint before */}
+                {sentenceTr(item, ex, lang) && (
+                  <div className="fc-ex-tr">{sentenceTr(item, ex, lang)}</div>
+                )}
+              </>
+            ) : (
+              '✘ ' + item.nl
+            )}
           </div>
           <button className="btn" onClick={nextRound}>{t({ en: 'Next', tr: 'Sonraki' })} →</button>
         </div>
@@ -705,12 +723,14 @@ export function Dictation() {
   useMarkPlayed('dictation');
   const t = useT();
   const level = getP('level', 'A2');
+  const ex = useExamples(level);
+  const lang = useLang();
   const bank = useMemo(() => {
-    const g = grammarFor(level).flatMap((x) => x.ex.map((e) => e.nl));
-    const v = lw().map((w) => w.ex);
-    return [...g, ...v].filter((s) => s.split(' ').length >= 4);
-  }, [level]);
-  const [s, setS] = useState('');
+    const g = grammarFor(level).flatMap((x) => x.ex.map((e) => ({ nl: e.nl, en: e.en, tr: e.tr })));
+    const v = lw().map((w) => ({ nl: w.ex, id: w.id, en: w.exEn, tr: w.exTr }));
+    return [...g, ...v].filter((x) => x.nl.split(' ').length >= 4);
+  }, [level, ex]);
+  const [s, setS] = useState(null);
   const [val, setVal] = useState('');
   const [state, setState] = useState(null);
   const [skeleton, setSkeleton] = useState(false);
@@ -724,17 +744,19 @@ export function Dictation() {
     setVal('');
     setState(null);
     setSkeleton(false);
-    setTimeout(() => { speak(pickOne, 0.85); ref.current?.focus(); }, 200);
+    setTimeout(() => { speak(pickOne.nl, 0.85); ref.current?.focus(); }, 200);
   }
   useEffect(() => { if (bank.length) next(); return stopSpeak; }, [bank]);
 
   function check() {
     if (state) return;
-    const ok = norm(val) === norm(s);
+    const ok = norm(val) === norm(s.nl);
     setState(ok ? 'ok' : 'err');
     setTotal(total + 1);
     if (ok) setScore(score + 1);
   }
+
+  if (!s) return <div className="page">…</div>;
 
   return (
     <div className="page narrow" style={{ textAlign: 'center' }}>
@@ -743,8 +765,8 @@ export function Dictation() {
       <Score score={score} total={total} />
       <p>{t({ en: 'Listen and type the sentence. Spelling counts, punctuation does not.', tr: 'Dinle ve cümleyi yaz. Yazım önemli, noktalama değil.' })}</p>
       <div className="row-btns" style={{ justifyContent: 'center' }}>
-        <button className="btn big" onClick={() => speak(s, 0.85)}>▶ {t({ en: 'Play', tr: 'Çal' })}</button>
-        <button className="btn ghost" onClick={() => speak(s, 0.6)}>🐢 {t({ en: 'Slower', tr: 'Yavaş' })}</button>
+        <button className="btn big" onClick={() => speak(s.nl, 0.85)}>▶ {t({ en: 'Play', tr: 'Çal' })}</button>
+        <button className="btn ghost" onClick={() => speak(s.nl, 0.6)}>🐢 {t({ en: 'Slower', tr: 'Yavaş' })}</button>
       </div>
       <textarea
         ref={ref}
@@ -762,14 +784,22 @@ export function Dictation() {
             disabled={skeleton}
             onClick={() => setSkeleton(true)}
             text={skeleton
-              ? <code className="mask">{s.split(' ').map((wd) => wd[0] + '_'.repeat(Math.max(wd.length - 1, 0))).join(' ')}</code>
+              ? <code className="mask">{s.nl.split(' ').map((wd) => wd[0] + '_'.repeat(Math.max(wd.length - 1, 0))).join(' ')}</code>
               : t({ en: 'show the shape of the sentence', tr: 'cümlenin iskeletini göster' })}
           />
         </>
       ) : (
         <div>
           <div className={'notice ' + (state === 'ok' ? 'ok' : 'err')}>
-            {state === 'ok' ? '✔ ' + t({ en: 'Exactly right!', tr: 'Tam doğru!' }) : '✘ ' + s}
+            {state === 'ok' ? (
+              <>
+                <div>✔ {t({ en: 'Exactly right!', tr: 'Tam doğru!' })}</div>
+                {/* hearing it right earns the meaning; a wrong answer gets only the sentence */}
+                {sentenceTr(s, ex, lang) && <div className="fc-ex-tr">{sentenceTr(s, ex, lang)}</div>}
+              </>
+            ) : (
+              '✘ ' + s.nl
+            )}
           </div>
           <button className="btn" onClick={next}>{t({ en: 'Next', tr: 'Sonraki' })} →</button>
         </div>
@@ -784,6 +814,7 @@ export function Idioms() {
   const t = useT();
   const lang = useLang();
   const level = getP('level', 'A2');
+  const ex = useExamples(level);
   const pool = useMemo(() => {
     const words = lw();
     const focus = words.filter((w) => ['idioms', 'social', 'connectors', 'abstract', 'academic'].includes(w.cat));
@@ -846,7 +877,10 @@ export function Idioms() {
       )}
       {sel && (
         <div>
-          <div className="notice"><i>{q.w.ex}</i> <button className="spk" onClick={() => speak(q.w.ex)}>🔊</button></div>
+          <div className="notice">
+            <i>{q.w.ex}</i> <button className="spk" onClick={() => speak(q.w.ex)}>🔊</button>
+            {exText(ex, q.w, lang) && <div className="fc-ex-tr">{exText(ex, q.w, lang)}</div>}
+          </div>
           <button className="btn" onClick={next}>{t({ en: 'Next', tr: 'Sonraki' })} →</button>
         </div>
       )}
