@@ -1246,6 +1246,38 @@ export function Info() {
         tr="Kurallar ve fiyatlar değişir. Bu sayfa yol göstermek içindir, hukuki tavsiye değildir — duo.nl ve inburgeren.nl’yi kontrol et; kendi durumunla ilgili belirsizlik varsa belediyene ya da Het Juridisch Loket’e (ücretsiz hukuki yardım) sor."
       />
 
+      <h2>{t({ en: 'Free resources we recommend', tr: 'Önerdiğimiz ücretsiz kaynaklar' })}</h2>
+      <S
+        en="This site is practice material. Before the real exam, always do the official mock exams too — they are made by the exam maker itself and show you the exact screens you will see."
+        tr="Bu site alıştırma materyalidir. Gerçek sınavdan önce mutlaka resmi deneme sınavlarını da çöz — onları sınavı hazırlayan kurum yapıyor ve birebir göreceğin ekranları gösteriyor."
+      />
+      <ul>
+        <li>
+          <a href="https://www.inburgeren.nl/examen-doen/oefenen.jsp" target="_blank" rel="noreferrer"><b>inburgeren.nl — officiële oefenexamens</b></a>
+          {' — '}{t({ en: 'the official DUO practice exams for every part. Do these at least once.', tr: 'her bölüm için resmi DUO deneme sınavları. Bunları en az bir kez çöz.' })}
+        </li>
+        <li>
+          <a href="https://www.adappel.nl/oefenexamens" target="_blank" rel="noreferrer">adappel.nl/oefenexamens</a>
+          {' — '}{t({ en: 'free downloadable practice exams (PDF) from a language school.', tr: 'bir dil okulundan ücretsiz indirilebilir deneme sınavları (PDF).' })}
+        </li>
+        <li>
+          <a href="https://nt2taalmenu.nl" target="_blank" rel="noreferrer">nt2taalmenu.nl</a>
+          {' — '}{t({ en: 'free NT2 lessons and exercises for every level.', tr: 'her seviye için ücretsiz NT2 dersleri ve alıştırmaları.' })}
+        </li>
+        <li>
+          <a href="https://oefenen.nl" target="_blank" rel="noreferrer">oefenen.nl</a>
+          {' — '}{t({ en: 'practise Dutch, digital skills and more at your own pace.', tr: 'kendi hızında Hollandaca ve dijital beceri alıştırmaları.' })}
+        </li>
+        <li>
+          <a href="https://www.learndutch.org" target="_blank" rel="noreferrer">learndutch.org</a>
+          {' — '}{t({ en: 'free video lessons; their 1000 most common words series on YouTube is excellent.', tr: 'ücretsiz video dersler; YouTube’daki en sık 1000 kelime serisi çok iyidir.' })}
+        </li>
+        <li>
+          <a href="https://www.inburgeringonline.nl" target="_blank" rel="noreferrer">inburgeringonline.nl</a>
+          {' — '}{t({ en: 'courses and exam information.', tr: 'kurslar ve sınav bilgileri.' })}
+        </li>
+      </ul>
+
       <h2>{t({ en: 'How to use this site', tr: 'Bu site nasıl kullanılır' })}</h2>
       <S
         en="Pick your level at the top of the page — words, grammar, exams and games all follow it. Start with the vocabulary and the grammar lessons, then do practice exams until you pass them comfortably. Speaking uses your microphone and Listening reads the text aloud, so use headphones and a quiet room."
