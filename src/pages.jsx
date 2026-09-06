@@ -184,7 +184,9 @@ export function Vocab() {
   const lang = useLang();
   const t = useT();
   const level = useActiveLevel();
-  const [cat, setCat] = useState('all');
+  // the start route sends "learn 30 words of X" here as /vocab?cat=X
+  const catFromUrl = new URLSearchParams(window.location.hash.split('?')[1] || '').get('cat');
+  const [cat, setCat] = useState(catFromUrl || 'all');
   const [q, setQ] = useState('');
   const [known, setKnown] = useState('all'); // all | hard | learned
   // 1000 cards at once is 50.000 pixels of scrolling and a sluggish phone, so grow on demand
@@ -220,6 +222,13 @@ export function Vocab() {
           ))}
         </select>
       </div>
+      {cat !== 'all' && (
+        <p>
+          <Link to={'/games/flashcards?cat=' + cat} className="btn">
+            🃏 {t({ en: 'Practise these words with flashcards →', tr: 'Bu kelimeleri flashcard ile çalış →' })}
+          </Link>
+        </p>
+      )}
       <div className="chip-row">
         {[
           ['all', t({ en: 'All', tr: 'Tümü' })],
@@ -984,7 +993,8 @@ function taskState(task, level, words, lessons) {
   const cat = CATS.find((c) => c.id === task.cat);
   return {
     done: known >= task.n,
-    to: `/games/flashcards?cat=${task.cat}`,
+    // learn on the word list (picture, audio, translation); flashcards is the separate game task
+    to: `/vocab?cat=${task.cat}`,
     icon: cat?.icon || '📚',
     label: {
       en: `${task.n} words — ${cat?.en || task.cat}`,

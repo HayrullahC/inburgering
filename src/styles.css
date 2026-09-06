@@ -620,7 +620,13 @@ a.card:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(28, 35, 
 .spell-input.err { border-color: var(--err); background: #fef2f2; }
 
 @media (max-width: 640px) {
-  .topbar nav { order: 3; width: 100%; }
+  /* one horizontally scrolling row: `flex: 1` (basis 0) used to let the nav share a line
+     with the language/account buttons and wrap 11 items one per line */
+  .topbar nav { order: 3; flex: 1 1 100%; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .topbar nav::-webkit-scrollbar { display: none; }
+  .topbar nav a { flex: 0 0 auto; white-space: nowrap; }
+  .topbar nav .sep { flex: 0 0 1px; }
+  main { padding-bottom: calc(60px + env(safe-area-inset-bottom)); }
   .match-grid { grid-template-columns: repeat(2, 1fr); }
 }
 .spk.on { color: var(--err); font-size: 15px; }
