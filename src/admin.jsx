@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { supa, LEVELS } from './lib.js';
+import { supa, LEVELS, sendMail } from './lib.js';
 
 // every exam in the app, across all three levels
 const TOTAL_EXAMS = LEVELS.reduce((n, l) => n + l.modules.length * l.exams, 0);
@@ -108,12 +108,29 @@ function FeedbackInbox() {
   const t = useT();
   const [rows, setRows] = useState(null);
   const [filter, setFilter] = useState('new');
+  const [draft, setDraft] = useState({}); // feedback id -> reply text being written
+  const [mail, setMail] = useState({}); // feedback id -> 'sent' | 'failed'
 
   async function load() {
     const { data, error } = await supa.from('feedback').select('*').order('created_at', { ascending: false });
     setRows(error ? [] : data);
   }
   useEffect(() => { load(); }, []);
+
+  // store the reply, mark done, and e-mail the member (mail may fail when notify isn't deployed)
+  async function reply(r) {
+    const text = (draft[r.id] || '').trim();
+    if (!text) return;
+    await supa.from('feedback').update({ reply: text, replied_at: new Date().toISOString(), status: 'done' }).eq('id', r.id);
+    const ok = await sendMail(
+      r.email,
+      t({ en: 'Reply to your feedback', tr: 'Geri bildiriminize cevap' }),
+      text + '\n\n— — —\n' + t({ en: 'Your message:', tr: 'Mesajınız:' }) + '\n' + r.message,
+    );
+    setMail({ ...mail, [r.id]: ok ? 'sent' : 'failed' });
+    setDraft({ ...draft, [r.id]: '' });
+    load();
+  }
 
   async function setStatus(id, status) {
     await supa.from('feedback').update({ status }).eq('id', id);
@@ -143,6 +160,25 @@ function FeedbackInbox() {
           <b>{icon[r.kind] || '💬'} {r.email}</b>{' '}
           <small>{new Date(r.created_at).toLocaleString()} · {r.page}</small>
           <p style={{ whiteSpace: 'pre-wrap', margin: '6px 0' }}>{r.message}</p>
+          {r.reply && (
+            <p style={{ whiteSpace: 'pre-wrap', margin: '6px 0', paddingLeft: 10, borderLeft: '3px solid var(--ok)' }}>
+              ↩ {r.reply} <small>({new Date(r.replied_at).toLocaleString()})</small>
+            </p>
+          )}
+          {r.email && (
+            <div className="ticket-reply">
+              <textarea rows={3} value={draft[r.id] || ''} maxLength={4000}
+                placeholder={t({ en: 'Reply — the member gets it by e-mail', tr: 'Cevap yaz — üyeye e-posta olarak gider' })}
+                onChange={(e) => setDraft({ ...draft, [r.id]: e.target.value })} />
+              <div className="row-btns">
+                <button className="btn" disabled={!(draft[r.id] || '').trim()} onClick={() => reply(r)}>
+                  📧 {t({ en: 'Reply & e-mail', tr: 'Cevapla & e-posta gönder' })}
+                </button>
+                {mail[r.id] === 'sent' && <small>✅ {t({ en: 'e-mail sent', tr: 'e-posta gönderildi' })}</small>}
+                {mail[r.id] === 'failed' && <small>⚠️ {t({ en: 'saved, but e-mail failed (notify function not set up?)', tr: 'kaydedildi ama e-posta gitmedi (notify fonksiyonu kurulu mu?)' })}</small>}
+              </div>
+            </div>
+          )}
           <div className="row-btns">
             {r.status === 'new'
               ? <button className="linklike" onClick={() => setStatus(r.id, 'done')}>✅ {t({ en: 'Mark done', tr: 'Tamamlandı' })}</button>

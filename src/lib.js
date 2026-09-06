@@ -5,6 +5,25 @@ import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js';
 export const supa =
   SUPABASE_URL && SUPABASE_ANON_KEY ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
+// ---------- admin → member e-mail (Edge Function "notify", Brevo) ----------
+// Returns true when the mail went out; false when not configured / not admin / failed.
+export async function sendMail(to, subject, text) {
+  if (!supa || !to) return false;
+  const { data } = await supa.auth.getSession();
+  const token = data?.session?.access_token;
+  if (!token) return false;
+  try {
+    const r = await fetch(`${SUPABASE_URL}/functions/v1/notify`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ to, subject, text }),
+    });
+    return r.ok;
+  } catch {
+    return false;
+  }
+}
+
 // ---------- auth-redirect token capture ----------
 // Email links (password recovery, signup confirmation) return with tokens in the URL
 // fragment: '#access_token=…&type=recovery'. HashRouter normalizes that fragment and

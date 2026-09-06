@@ -78,6 +78,26 @@ members open tickets and read replies there, the admin answers from the Tickets 
 `/admin`. Flood protection is server-side: max 5 tickets and 30 replies per user per day,
 2000-character messages.
 
+### E-mailing members when you reply (free, Brevo)
+
+Feedback messages get a reply box too (run `supabase/feedback-reply.sql` once). Every
+admin reply — ticket or feedback — is e-mailed to the member through the `notify` Edge
+Function, which only accepts calls from an admin account and sends via Brevo's free
+transactional API. One-time setup:
+
+1. Brevo → **SMTP & API → API keys** → create a key (starts with `xkeysib-`). This is a
+   different key from the SMTP one.
+2. From the repo root (`supabase link` done once already):
+
+```bash
+supabase secrets set BREVO_API_KEY=xkeysib-your-key MAIL_FROM=you@example.com
+supabase functions deploy notify
+```
+
+`MAIL_FROM` must be a sender verified in Brevo (the same address used for auth mail
+works). Until the function is deployed replies are still saved; the admin panel just
+shows "e-mail failed".
+
 ## Email sending (SMTP, free)
 
 Supabase's built-in mailer sends only ~2 emails/hour — enough for testing only.

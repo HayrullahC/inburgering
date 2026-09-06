@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { supa } from './lib.js';
+import { supa, sendMail } from './lib.js';
 import { useT, useUser } from './App.jsx';
 
 // ---------------- FAQ content ----------------
@@ -122,6 +122,7 @@ export function TicketThread({ ticket, asAdmin, onChanged }) {
   const [msg, setMsg] = useState('');
   const [err, setErr] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [mail, setMail] = useState(null); // admin only: 'sent' | 'failed'
 
   async function load() {
     const { data } = await supa.from('ticket_replies').select('*')
@@ -141,8 +142,14 @@ export function TicketThread({ ticket, asAdmin, onChanged }) {
     await supa.from('tickets').update({
       status: asAdmin ? 'answered' : 'open', updated_at: new Date().toISOString(),
     }).eq('id', ticket.id);
+    const text = msg.trim();
     setMsg(''); setBusy(false);
     load(); onChanged?.();
+    if (asAdmin && ticket.email) {
+      const ok = await sendMail(ticket.email, 'Re: ' + ticket.subject, text + '\n\n' +
+        t({ en: 'You can reply on the Support page of the site.', tr: 'Sitedeki Destek sayfasından cevap yazabilirsiniz.' }));
+      setMail(ok ? 'sent' : 'failed');
+    }
   }
 
   async function setStatus(status) {
@@ -175,6 +182,8 @@ export function TicketThread({ ticket, asAdmin, onChanged }) {
             </button>
           </div>
           {err && <div className="notice err">{err}</div>}
+          {mail === 'sent' && <small>✅ {t({ en: 'e-mail sent to the member', tr: 'üyeye e-posta gönderildi' })}</small>}
+          {mail === 'failed' && <small>⚠️ {t({ en: 'reply saved, but e-mail failed (notify function not set up?)', tr: 'cevap kaydedildi ama e-posta gitmedi (notify fonksiyonu kurulu mu?)' })}</small>}
         </form>
       ) : (
         <p className="row-btns">
