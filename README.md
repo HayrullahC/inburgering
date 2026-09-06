@@ -24,6 +24,19 @@ Every game has a 💡 hint — uncover a letter, remove two wrong answers, place
 word, show the shape of the sentence, or (for de/het) the actual grammar rule, offered
 only when that rule really explains the word at hand.
 
+**Pronunciation:** four lessons at the top of the A2 grammar list (vowels, diphthongs,
+consonants, stress and connected speech) — every sound group has a 🔊 button, and the start
+route puts them before the first grammar rules.
+
+**Dialogues:** 21 real-life conversations (10 A2, 6 B1, 5 B2) — read along, listen line by
+line or in full, reveal EN/TR translations on demand, key words, and a 3-question
+comprehension check that feeds the start route. Data in `src/data/dialogues.js`.
+
+**Speaking exams** follow the real A2 format: besides short questions, situations and
+picture descriptions, every exam contains "double questions" (the examiner says something
+about themselves, then asks two things) scored per part, and the first task shows the
+official grading criteria (task, vocabulary, grammar, fluency, structure, pronunciation).
+
 Every example sentence is translated into English and Turkish. The translations live in
 `src/data/ex/` and load only when a screen needs them, so the first page load stays small.
 

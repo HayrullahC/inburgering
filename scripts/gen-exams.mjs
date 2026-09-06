@@ -470,17 +470,43 @@ const SP_PREF = [
   { l: 'Wanneer sport u liever: in de ochtend of in de avond? En waarom?', kw: [['ochtend'], ['avond']], model: 'Ik sport liever in de ochtend, omdat ik dan energie heb.' },
 ];
 
+// The real A2 speaking exam asks "double" questions: the examiner first says something
+// about themselves, then asks you two things in one breath. Both parts must be answered —
+// candidates lose most points by answering only the first half. Scored per part (pts).
+const SP_DUBBEL = [
+  { l: 'Ik ga één keer per jaar op vakantie. Hoe vaak gaat u op vakantie en waar gaat u dan naartoe?', pts: [{ d: 'Hoe vaak', kw: [['keer'], ['jaar'], ['nooit'], ['soms'], ['vaak'], ['elke']] }, { d: 'Waar naartoe', kw: [['naar'], ['turkije'], ['familie'], ['thuis'], ['strand'], ['stad']] }], model: 'Ik ga één keer per jaar op vakantie. Dan ga ik naar mijn familie in Turkije.' },
+  { l: 'Ik spreek twee talen: Nederlands en Engels. Welke talen spreekt u en welke taal spreekt u thuis?', pts: [{ d: 'Welke talen', kw: [['spreek'], ['turks'], ['arabisch'], ['engels'], ['nederlands'], ['taal']] }, { d: 'Thuis', kw: [['thuis']] }], model: 'Ik spreek Turks, Engels en een beetje Nederlands. Thuis spreek ik Turks.' },
+  { l: 'Ik heb één broer en geen zussen. Hoeveel broers en zussen heeft u en waar wonen zij?', pts: [{ d: 'Hoeveel broers/zussen', kw: [['broer'], ['zus'], ['geen'], ['kind']] }, { d: 'Waar wonen zij', kw: [['woon'], ['wonen'], ['in ']] }], model: 'Ik heb twee broers en één zus. Zij wonen in Turkije, in Ankara.' },
+  { l: 'Mijn dag begint om zeven uur. Hoe laat begint uw dag en wat doet u dan het eerst?', pts: [{ d: 'Hoe laat', kw: [['uur'], ['half'], ['sta']] }, { d: 'Wat eerst', kw: [['eerst'], ['dan'], ['drink'], ['eet'], ['douche'], ['koffie'], ['ontbijt']] }], model: 'Mijn dag begint om zes uur. Eerst drink ik koffie en dan maak ik ontbijt voor de kinderen.' },
+  { l: 'Ik woon in een flat in Haarlem. Waar woont u en hoe is het contact met uw buren?', pts: [{ d: 'Waar', kw: [['woon']] }, { d: 'Contact met buren', kw: [['buur'], ['buren'], ['contact'], ['aardig'], ['goed'], ['weinig']] }], model: 'Ik woon in Rotterdam, in een flat. Het contact met de buren is goed; wij groeten elkaar en soms drinken wij koffie.' },
+  { l: 'Ik sport twee keer per week om gezond te blijven. Wat doet u om gezond te blijven en hoe vaak doet u dat?', pts: [{ d: 'Wat', kw: [['sport'], ['wandel'], ['fiets'], ['gezond'], ['eet'], ['groente'], ['loop'], ['zwem']] }, { d: 'Hoe vaak', kw: [['keer'], ['elke'], ['dag'], ['week'], ['vaak'], ['soms']] }], model: 'Ik wandel elke dag een half uur en ik eet veel groente. Ik ga ook één keer per week zwemmen.' },
+  { l: 'Ik doe mijn boodschappen op zaterdag met de fiets. Wanneer doet u boodschappen en hoe gaat u naar de winkel?', pts: [{ d: 'Wanneer', kw: [['dag'], ['maandag'], ['dinsdag'], ['woensdag'], ['donderdag'], ['vrijdag'], ['zaterdag'], ['zondag'], ['avond'], ['ochtend'], ['weekend'], ['week']] }, { d: 'Hoe (vervoer)', kw: [['fiets'], ['auto'], ['lopen'], ['loop'], ['bus'], ['lopend'], ['voet']] }], model: 'Ik doe boodschappen op vrijdagavond. Ik ga lopend, want de supermarkt is dichtbij.' },
+  { l: 'Ik luister elke ochtend naar de radio. Luistert u naar de radio of kijkt u liever tv, en welk programma vindt u leuk?', pts: [{ d: 'Radio of tv', kw: [['radio'], ['tv'], ['televisie'], ['kijk'], ['luister']] }, { d: 'Welk programma', kw: [['programma'], ['nieuws'], ['muziek'], ['serie'], ['film'], ['voetbal'], ['sport']] }], model: 'Ik kijk liever tv. Ik vind het nieuws en voetbal leuk.' },
+  { l: 'In het weekend ga ik graag naar het park. Wat doet u het liefst in het weekend en met wie doet u dat?', pts: [{ d: 'Wat', kw: [['ga'], ['doe'], ['wandel'], ['kook'], ['bezoek'], ['speel'], ['kijk'], ['sport'], ['slaap'], ['winkel']] }, { d: 'Met wie', kw: [['met'], ['alleen'], ['familie'], ['vriend'], ['kinderen'], ['man'], ['vrouw']] }], model: 'In het weekend kook ik graag. Dat doe ik samen met mijn vrouw en de kinderen.' },
+  { l: 'Ik vind de zomer het mooiste seizoen. Welk seizoen vindt u het mooist en waarom?', pts: [{ d: 'Welk seizoen', kw: [['zomer'], ['winter'], ['lente'], ['herfst']] }, { d: 'Waarom', kw: [['omdat'], ['want'], ['warm'], ['koud'], ['mooi'], ['zon'], ['lekker']] }], model: 'Ik vind de lente het mooist, omdat alles dan weer groen wordt en het niet te warm is.' },
+  { l: 'Ik werk als verpleegkundige in een ziekenhuis. Wat voor werk doet u of wat wilt u graag doen, en waarom?', pts: [{ d: 'Werk / wens', kw: [['werk'], ['ben'], ['wil'], ['zoek'], ['studeer']] }, { d: 'Waarom', kw: [['omdat'], ['want'], ['leuk'], ['graag'], ['goed']] }], model: 'Ik werk nu in een restaurant, maar ik wil graag kapper worden, omdat ik dat leuk vind.' },
+  { l: 'Ik ontbijt elke dag met brood en kaas. Wat eet u meestal bij het ontbijt en hoe laat eet u?', pts: [{ d: 'Wat', kw: [['brood'], ['ei'], ['kaas'], ['olijven'], ['yoghurt'], ['thee'], ['koffie'], ['eet'], ['niets']] }, { d: 'Hoe laat', kw: [['uur'], ['half'], ['ochtend'], ['vroeg']] }], model: 'Ik eet meestal brood met kaas en olijven en ik drink thee. Ik ontbijt om half acht.' },
+  { l: 'Ik leer Nederlands op een school in de avond. Waar leert u Nederlands en wat vindt u moeilijk?', pts: [{ d: 'Waar', kw: [['school'], ['thuis'], ['online'], ['internet'], ['les'], ['cursus'], ['werk'], ['app']] }, { d: 'Wat moeilijk', kw: [['moeilijk'], ['grammatica'], ['spreken'], ['uitspraak'], ['woorden'], ['schrijven'], ['luisteren']] }], model: 'Ik leer Nederlands thuis met een app en op school. Ik vind de uitspraak het moeilijkst.' },
+  { l: 'Ik ga met de trein naar mijn werk. Hoe gaat u naar uw werk of school en hoe lang duurt dat?', pts: [{ d: 'Hoe', kw: [['fiets'], ['bus'], ['auto'], ['trein'], ['tram'], ['loop'], ['lopend'], ['metro']] }, { d: 'Hoe lang', kw: [['minuten'], ['uur'], ['kwartier'], ['half']] }], model: 'Ik ga met de fiets naar school. Dat duurt ongeveer twintig minuten.' },
+  { l: 'Ik bel mijn moeder elke zondag. Hoe vaak heeft u contact met uw familie en hoe doet u dat?', pts: [{ d: 'Hoe vaak', kw: [['elke'], ['dag'], ['week'], ['keer'], ['vaak'], ['soms'], ['zondag']] }, { d: 'Hoe', kw: [['bel'], ['telefoon'], ['video'], ['whatsapp'], ['bericht'], ['bezoek'], ['app']] }], model: 'Ik heb elke dag contact met mijn familie. Wij bellen met video via WhatsApp.' },
+  { l: 'Ik ga graag naar de bioscoop. Wat doet u graag in uw vrije tijd en wanneer heeft u vrije tijd?', pts: [{ d: 'Wat', kw: [['lees'], ['kijk'], ['sport'], ['kook'], ['wandel'], ['speel'], ['muziek'], ['bioscoop'], ['tuin'], ['film']] }, { d: 'Wanneer', kw: [['avond'], ['weekend'], ['zaterdag'], ['zondag'], ['na'], ['vrij']] }], model: 'Ik lees graag en ik kijk films. Ik heb vrije tijd in de avond en in het weekend.' },
+];
+
 function makeSpreken(rnd) {
   const nazeg = shuffleS(rnd, VOCAB.filter((w) => w.ex.split(' ').length >= 4)).slice(0, 8);
   const qa = shuffleS(rnd, SP_QA);
+  const dub = shuffleS(rnd, SP_DUBBEL);
   const sit = shuffleS(rnd, SP_SIT);
   const scenes = shuffleS(rnd, SP_SCENE);
   const prefs = shuffleS(rnd, SP_PREF);
   const qs = [];
-  let ai = 0, si = 0, ci = 0, pi = 0, ni = 0;
+  let ai = 0, di = 0, si = 0, ci = 0, pi = 0, ni = 0;
   while (qs.length < QUESTIONS) {
-    const k = qs.length % 5;
+    const k = qs.length % 6;
     if (k === 0) {
+      const x = dub[di++ % dub.length];
+      qs.push({ t: 'sp', l: x.l, q: 'Luister naar de vraag. Geef antwoord op BEIDE delen.', pts: x.pts, model: x.model, sec: 30 });
+    } else if (k === 5) {
       const x = qa[ai++ % qa.length];
       qs.push({ t: 'sp', l: x.l, q: 'Luister naar de vraag en geef antwoord.', kw: x.kw, model: x.model });
     } else if (k === 1) {

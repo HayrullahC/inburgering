@@ -2,11 +2,13 @@
 // pages.jsx and games.jsx import from here instead of the individual data files.
 import { VOCAB_A1 } from './vocab-a1.js';
 import { VOCAB as VOCAB_A2, CATS as CATS_A2 } from './vocab.js';
+import { VOCAB_LEVEN } from './vocab-leven.js';
 import { VOCAB_B1A } from './vocab-b1a.js';
 import { VOCAB_B1B } from './vocab-b1b.js';
 import { VOCAB_B2A } from './vocab-b2a.js';
 import { VOCAB_B2B } from './vocab-b2b.js';
 import { VOCAB_B2C } from './vocab-b2c.js';
+import { GRAMMAR_UITSPRAAK } from './grammar-uitspraak.js';
 import { GRAMMAR as GRAMMAR_A2 } from './grammar.js';
 import { GRAMMAR_B1 } from './grammar-b1.js';
 import { GRAMMAR_B2 } from './grammar-b2.js';
@@ -49,6 +51,9 @@ export const VOCAB = [
   // numbers, months, colours, question words: the ground floor everything else stands on
   ...dedupe(VOCAB_A1),
   ...dedupe(withLevel(VOCAB_A2, 'A2')),
+  // life in the Netherlands: gemeente, toeslagen, zorg, school, werk — the words the
+  // official-letter and KNM side of the exam actually uses (A2 and B1 entries)
+  ...dedupe(VOCAB_LEVEN),
   ...dedupe(VOCAB_B1A),
   ...dedupe(VOCAB_B1B),
   ...dedupe(VOCAB_B2A),
@@ -57,6 +62,8 @@ export const VOCAB = [
 ];
 
 export const GRAMMAR = [
+  // pronunciation first: you need the sounds before the rules
+  ...GRAMMAR_UITSPRAAK,
   ...withLevel(GRAMMAR_A2, 'A2'),
   ...GRAMMAR_B1,
   ...GRAMMAR_B2,

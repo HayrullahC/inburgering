@@ -12,6 +12,9 @@
 //   { k: 'grammar', lesson }   read a grammar lesson and mark it complete
 //   { k: 'game',    game }     play a game once
 //   { k: 'exam',    mod, n }   sit a practice exam
+//   { k: 'dialogue', id }      study a dialogue and pass its comprehension check
+
+import { DIALOGUES } from './dialogues.js';
 
 const P1 = { en: 'First steps', tr: 'İlk adımlar' };
 const P2 = { en: 'Everyday life', tr: 'Günlük hayat' };
@@ -29,13 +32,22 @@ export const ROUTE_A2 = [
     tasks: [{ k: 'words', cat: 'basis', n: 30 }, { k: 'game', game: 'flashcards' }],
   },
   {
+    id: 'a2-01b', phase: P1,
+    title: { en: 'The sounds of Dutch', tr: 'Hollandacanın sesleri' },
+    why: {
+      en: 'Before the rules, the sounds: short and long vowels, ui, eu, ij. Listen to each group and repeat it out loud — your ear and mouth need this more than your memory does.',
+      tr: 'Kurallardan önce sesler: kısa ve uzun ünlüler, ui, eu, ij. Her grubu dinle ve sesli tekrar et — kulağın ve ağzın buna hafızandan daha çok ihtiyaç duyuyor.',
+    },
+    tasks: [{ k: 'grammar', lesson: 'uitspraak-klinkers' }, { k: 'grammar', lesson: 'uitspraak-tweeklanken' }],
+  },
+  {
     id: 'a2-02', phase: P1,
     title: { en: 'Greetings and introducing yourself', tr: 'Selamlaşma ve kendini tanıtma' },
     why: {
       en: 'The first Dutch you will actually use out loud: hello, thank you, my name is, I come from.',
       tr: 'Sesli olarak gerçekten kullanacağın ilk Hollandaca: merhaba, teşekkürler, adım…, …’den geliyorum.',
     },
-    tasks: [{ k: 'words', cat: 'social', n: 25 }, { k: 'grammar', lesson: 'pronouns' }],
+    tasks: [{ k: 'words', cat: 'social', n: 25 }, { k: 'grammar', lesson: 'pronouns' }, { k: 'dialogue', id: 'a2-kennismaken' }],
   },
   {
     id: 'a2-03', phase: P1,
@@ -56,13 +68,22 @@ export const ROUTE_A2 = [
     tasks: [{ k: 'grammar', lesson: 'present' }, { k: 'game', game: 'spell' }],
   },
   {
+    id: 'a2-04b', phase: P1,
+    title: { en: 'g, sch, r and word stress', tr: 'g, sch, r ve vurgu' },
+    why: {
+      en: 'The famous Dutch g, sch, the soft w, and where the stress falls — including the numbers everyone mispronounces (vijftien, veertig, tachtig).',
+      tr: 'Meşhur Hollandaca g, sch, yumuşak w ve vurgunun yeri — herkesin yanlış söylediği sayılar dahil (vijftien, veertig, tachtig).',
+    },
+    tasks: [{ k: 'grammar', lesson: 'uitspraak-medeklinkers' }, { k: 'grammar', lesson: 'uitspraak-klemtoon' }],
+  },
+  {
     id: 'a2-05', phase: P1,
     title: { en: 'de or het', tr: 'de mi het mi' },
     why: {
       en: 'Every Dutch noun carries de or het and there is no shortcut — you learn it with the word. Better to start early than to relearn 500 words later.',
       tr: 'Her Hollandaca ismin de veya het’i vardır ve kestirme yok — kelimeyle birlikte öğrenilir. Erken başlamak, sonra 500 kelimeyi yeniden öğrenmekten iyidir.',
     },
-    tasks: [{ k: 'grammar', lesson: 'articles' }, { k: 'game', game: 'article' }, { k: 'words', cat: 'housing', n: 20 }],
+    tasks: [{ k: 'grammar', lesson: 'articles' }, { k: 'game', game: 'article' }, { k: 'words', cat: 'housing', n: 20 }, { k: 'dialogue', id: 'a2-makelaar' }],
   },
 
   {
@@ -90,7 +111,7 @@ export const ROUTE_A2 = [
       en: 'The verb sits in second place — say it out of order and a Dutch person hears it immediately, even if every word is right.',
       tr: 'Fiil ikinci sırada durur — sırayı bozarsan bütün kelimeler doğru olsa bile Hollandalı bunu hemen fark eder.',
     },
-    tasks: [{ k: 'grammar', lesson: 'word-order' }, { k: 'game', game: 'sentence' }],
+    tasks: [{ k: 'grammar', lesson: 'word-order' }, { k: 'game', game: 'sentence' }, { k: 'dialogue', id: 'a2-cafe' }],
   },
   {
     id: 'a2-09', phase: P2,
@@ -99,7 +120,7 @@ export const ROUTE_A2 = [
       en: 'Wie, wat, waar, hoeveel. The exam is made of questions, so you have to recognise them instantly.',
       tr: 'Wie, wat, waar, hoeveel. Sınav sorulardan oluşuyor; bunları anında tanıman gerekiyor.',
     },
-    tasks: [{ k: 'grammar', lesson: 'questions' }, { k: 'words', cat: 'daily', n: 25 }],
+    tasks: [{ k: 'grammar', lesson: 'questions' }, { k: 'words', cat: 'daily', n: 25 }, { k: 'dialogue', id: 'a2-weg-vragen' }],
   },
   {
     id: 'a2-10', phase: P2,
@@ -118,7 +139,7 @@ export const ROUTE_A2 = [
       en: 'Possessives, and the words for the people around you.',
       tr: 'İyelik zamirleri ve çevrendeki insanların adları.',
     },
-    tasks: [{ k: 'grammar', lesson: 'possessives' }, { k: 'words', cat: 'family', n: 25 }],
+    tasks: [{ k: 'grammar', lesson: 'possessives' }, { k: 'words', cat: 'family', n: 25 }, { k: 'dialogue', id: 'a2-afspreken' }],
   },
   {
     id: 'a2-12', phase: P3,
@@ -127,7 +148,7 @@ export const ROUTE_A2 = [
       en: 'deze, die, dit, dat — pointing at things, which you do constantly at a counter or in a shop.',
       tr: 'deze, die, dit, dat — bir şeyi işaret etmek. Bankoda ya da dükkânda sürekli buna ihtiyacın olur.',
     },
-    tasks: [{ k: 'grammar', lesson: 'demonstratives' }, { k: 'words', cat: 'city', n: 20 }],
+    tasks: [{ k: 'grammar', lesson: 'demonstratives' }, { k: 'words', cat: 'city', n: 20 }, { k: 'dialogue', id: 'a2-winterjas' }],
   },
   {
     id: 'a2-13', phase: P3,
@@ -136,7 +157,7 @@ export const ROUTE_A2 = [
       en: 'Modal verbs turn plain sentences into real requests: kan ik…, mag ik…, ik wil graag. This is how you actually get things done here.',
       tr: 'Kip fiilleri düz cümleyi gerçek bir ricaya çevirir: kan ik…, mag ik…, ik wil graag. Burada işini böyle hallediyorsun.',
     },
-    tasks: [{ k: 'grammar', lesson: 'modals' }, { k: 'words', cat: 'health', n: 25 }],
+    tasks: [{ k: 'grammar', lesson: 'modals' }, { k: 'words', cat: 'health', n: 25 }, { k: 'dialogue', id: 'a2-huisarts' }],
   },
   {
     id: 'a2-14', phase: P3,
@@ -145,7 +166,7 @@ export const ROUTE_A2 = [
       en: 'opstaan becomes "ik sta om zeven uur op" — the verb splits and half of it flies to the end. Very Dutch, and very common.',
       tr: 'opstaan, "ik sta om zeven uur op" olur — fiil ikiye ayrılır ve yarısı cümlenin sonuna uçar. Çok Hollandaca ve çok yaygın.',
     },
-    tasks: [{ k: 'grammar', lesson: 'separable' }, { k: 'words', cat: 'transport', n: 25 }],
+    tasks: [{ k: 'grammar', lesson: 'separable' }, { k: 'words', cat: 'transport', n: 25 }, { k: 'dialogue', id: 'a2-nieuwe-baan' }],
   },
   {
     id: 'a2-15', phase: P3,
@@ -163,7 +184,7 @@ export const ROUTE_A2 = [
       en: 'Prices, paying, the bank, benefits. Together with numbers this is most of daily survival.',
       tr: 'Fiyatlar, ödeme, banka, yardımlar. Sayılarla birlikte günlük hayatta ayakta kalmanın büyük kısmı bu.',
     },
-    tasks: [{ k: 'words', cat: 'shopping', n: 25 }, { k: 'words', cat: 'money', n: 20 }, { k: 'exam', mod: 'lezen', n: 2 }],
+    tasks: [{ k: 'words', cat: 'shopping', n: 25 }, { k: 'words', cat: 'money', n: 20 }, { k: 'exam', mod: 'lezen', n: 2 }, { k: 'dialogue', id: 'a2-boodschappen' }],
   },
 
   {
@@ -173,7 +194,7 @@ export const ROUTE_A2 = [
       en: 'ik heb gewerkt. This is the past tense the Dutch actually speak in, so learn it before the other one.',
       tr: 'ik heb gewerkt. Hollandalıların konuşurken kullandığı geçmiş zaman bu; diğerinden önce bunu öğren.',
     },
-    tasks: [{ k: 'grammar', lesson: 'perfectum' }, { k: 'game', game: 'verbs' }],
+    tasks: [{ k: 'grammar', lesson: 'perfectum' }, { k: 'game', game: 'verbs' }, { k: 'dialogue', id: 'a2-vakantie' }],
   },
   {
     id: 'a2-18', phase: P4,
@@ -259,6 +280,7 @@ export const ROUTE_A2 = [
 export function buildRoute(level, lessons, cats) {
   if (level === 'A2') return ROUTE_A2;
   const mods = ['lezen', 'luisteren', 'schrijven', 'spreken', 'knm'];
+  const dialogues = DIALOGUES.filter((d) => d.level === level);
   const steps = [];
   for (let i = 0, s = 0; i < lessons.length; i += 3, s += 1) {
     const chunk = lessons.slice(i, i + 3);
@@ -274,6 +296,7 @@ export function buildRoute(level, lessons, cats) {
       tasks: [
         ...chunk.map((l) => ({ k: 'grammar', lesson: l.id })),
         ...(cat ? [{ k: 'words', cat: cat.id, n: 25 }] : []),
+        ...(dialogues[s] ? [{ k: 'dialogue', id: dialogues[s].id }] : []),
         { k: 'exam', mod: mods[s % mods.length], n: s + 1 },
       ],
     });

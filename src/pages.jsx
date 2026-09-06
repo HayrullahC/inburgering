@@ -9,6 +9,7 @@ import {
 import { useLang, useT, useUser } from './App.jsx';
 import { GRAMMAR, CATS, vocabFor, grammarFor, catsFor } from './data/index.js';
 import { buildRoute } from './data/startroute.js';
+import { DIALOGUES } from './data/dialogues.js';
 import { useExamples, exText } from './data/ex/index.js';
 
 const examFiles = import.meta.glob('./data/exams/*/*.json');
@@ -527,8 +528,42 @@ function evalOpen(q, text) {
     const hits = q.pts.map((p) => hitAny(text, p.kw));
     return { ok: hits.filter(Boolean).length >= q.pts.length - 1 && words >= q.min, hits, words };
   }
-  if (q.t === 'sp') return { ok: hitAny(text, q.kw), words };
+  if (q.t === 'sp') {
+    // double question (real A2 format): every part must be answered
+    if (q.pts) {
+      const hits = q.pts.map((p) => hitAny(text, p.kw));
+      return { ok: hits.every(Boolean), hits, words };
+    }
+    return { ok: hitAny(text, q.kw), words };
+  }
   return { ok: words >= (q.min || 3), words }; // zin / open
+}
+
+// How the real exam scores you — shown on the first task so people know what to aim for.
+// Mirrors the official A2 grading grid: task fulfilment first (score 0 there zeroes the rest).
+function Rubric({ speaking }) {
+  const t = useT();
+  const rows = speaking
+    ? [
+        { en: 'Task: answer the whole question — with double questions, BOTH parts', tr: 'Görev: sorunun tamamına cevap ver — çift sorularda İKİ parçaya da' },
+        { en: 'Vocabulary: simple words are fine, as long as they fit the question', tr: 'Kelime: basit kelimeler yeterli, yeter ki soruya uysun' },
+        { en: 'Grammar: short correct sentences beat long wrong ones', tr: 'Gramer: kısa doğru cümle, uzun yanlış cümleden iyidir' },
+        { en: 'Fluency: keep going, do not stop to search for a word', tr: 'Akıcılık: durma, kelime aramak için takılma' },
+        { en: 'Structure: link with en, maar, want, omdat', tr: 'Yapı: en, maar, want, omdat ile bağla' },
+        { en: 'Pronunciation: an accent is fine, being understood is what counts', tr: 'Telaffuz: aksan sorun değil, anlaşılmak önemli' },
+      ]
+    : [
+        { en: 'Task: cover every point the instruction asks for', tr: 'Görev: yönergedeki her maddeyi yaz' },
+        { en: 'Enough words: too short scores zero', tr: 'Yeterli uzunluk: çok kısa cevap sıfır alır' },
+        { en: 'Grammar and spelling: short correct sentences', tr: 'Gramer ve yazım: kısa doğru cümleler' },
+        { en: 'Form: greeting and closing in a letter or e-mail', tr: 'Biçim: mektup/e-postada selamlama ve kapanış' },
+      ];
+  return (
+    <details className="faq-item">
+      <summary>📋 {t({ en: 'How the real exam scores this', tr: 'Gerçek sınav bunu nasıl puanlar' })}</summary>
+      <ul className="chk">{rows.map((r, i) => <li key={i}>{t(r)}</li>)}</ul>
+    </details>
+  );
 }
 
 function OpenRunner({ level, mod, n, qs }) {
@@ -621,6 +656,7 @@ function OpenRunner({ level, mod, n, qs }) {
       )}
       {q.sc && <div className="scene">{q.sc}</div>}
       {q.l && <AudioPlayer key={mod + n + i} text={q.l} playLabel={t({ en: 'Play', tr: 'Dinle' })} />}
+      {i === 0 && <Rubric speaking={speaking} />}
 
       {speaking ? (
         <div className="listen-box">
@@ -920,6 +956,10 @@ const GAME_LABEL = {
 // How far along a single task is. Nothing is ticked by hand: a task is done when the
 // work behind it is done, so the route cannot be clicked through without learning.
 function taskState(task, level, words, lessons) {
+  if (task.k === 'dialogue') {
+    const d = DIALOGUES.find((x) => x.id === task.id);
+    return { done: !!getP('dlg:' + task.id)?.ok, to: '/dialogues/' + task.id, icon: '💬', label: d?.title || { en: task.id, tr: task.id } };
+  }
   if (task.k === 'grammar') {
     const lesson = lessons.find((l) => l.id === task.lesson);
     return { done: !!getP('gram:' + task.lesson), to: '/grammar/' + task.lesson, icon: '🧩', label: lesson?.title };

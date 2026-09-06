@@ -8,6 +8,7 @@ import { GamesHome, Flashcards, MatchGame, Sprint, Spell, Sentence, Article, Ver
 import { AdminPage, FeedbackWidget, isAdmin } from './admin.jsx';
 import { Practice } from './practice.jsx';
 import { Support } from './support.jsx';
+import { Dialogues, Dialogue } from './dialogues.jsx';
 
 // ---------- i18n ----------
 const UI = {
@@ -18,6 +19,7 @@ const UI = {
   exams: { en: 'Exams', tr: 'Sınavlar' },
   games: { en: 'Games', tr: 'Oyunlar' },
   practice: { en: 'Practice', tr: 'Pratik' },
+  dialogues: { en: 'Dialogues', tr: 'Diyaloglar' },
   info: { en: 'Exam Info', tr: 'Sınav Bilgisi' },
   support: { en: 'Support', tr: 'Destek' },
   account: { en: 'Account', tr: 'Hesap' },
@@ -93,14 +95,17 @@ export default function App() {
             </div>
           )}
           {!locked && <nav>
-            <NavLink to="/">{t('home')}</NavLink>
-            <NavLink to="/start">{t('start')}</NavLink>
-            <NavLink to="/vocab">{t('vocab')}</NavLink>
-            <NavLink to="/grammar">{t('grammar')}</NavLink>
-            <NavLink to="/exams">{t('exams')}</NavLink>
+            <NavLink to="/">🏠 {t('home')}</NavLink>
+            <NavLink to="/start">🚀 {t('start')}</NavLink>
+            <span className="sep" />
+            <NavLink to="/vocab">📖 {t('vocab')}</NavLink>
+            <NavLink to="/grammar">✏️ {t('grammar')}</NavLink>
+            <NavLink to="/dialogues">💬 {t('dialogues')}</NavLink>
+            <NavLink to="/exams">📝 {t('exams')}</NavLink>
             <NavLink to="/practice">🗣️ {t('practice')}</NavLink>
-            <NavLink to="/games">{t('games')}</NavLink>
-            <NavLink to="/info">{t('info')}</NavLink>
+            <NavLink to="/games">🎮 {t('games')}</NavLink>
+            <span className="sep" />
+            <NavLink to="/info">ℹ️ {t('info')}</NavLink>
             <NavLink to="/support">🛟 {t('support')}</NavLink>
             {isAdmin(user) && <NavLink to="/admin">⚙️</NavLink>}
           </nav>}
@@ -149,6 +154,8 @@ export default function App() {
             <Route path="/start" element={<StartRoute />} />
             <Route path="/practice" element={<Practice />} />
             <Route path="/support" element={<Support />} />
+            <Route path="/dialogues" element={<Dialogues />} />
+            <Route path="/dialogues/:id" element={<Dialogue />} />
             <Route path="/admin" element={<AdminPage />} />
           </Routes>
           )}

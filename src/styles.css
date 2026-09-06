@@ -41,6 +41,14 @@ a { color: var(--brand); text-decoration: none; }
   font-size: 14px;
 }
 .topbar nav a.active { background: #e8edfb; color: var(--brand); }
+.topbar nav .sep { width: 1px; align-self: stretch; margin: 6px 6px; background: var(--line); }
+
+/* dialogues */
+.dlg-line { display: grid; grid-template-columns: 90px 1fr; gap: 6px 10px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.dlg-who { font-weight: 700; color: var(--brand); }
+.dlg-tr { grid-column: 2; color: var(--mut); font-size: 14px; }
+.dlg-vocab td { padding: 4px 8px; }
+@media (max-width: 600px) { .dlg-line { grid-template-columns: 1fr; } .dlg-tr { grid-column: 1; } }
 .topbar-right { display: flex; gap: 8px; align-items: center; }
 .lang-btn, .acct-btn {
   border: 1px solid var(--line);
