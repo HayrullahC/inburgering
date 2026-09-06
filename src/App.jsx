@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useSyncExternalStore } from 'react';
 import { Routes, Route, NavLink, Link, useNavigate } from 'react-router-dom';
-import { supa, subscribe, getAll, getP, setP, onLogin, onLogout, LEVELS } from './lib.js';
+import { supa, subscribe, getAll, getP, setP, onLogin, onLogout, LEVELS, subscribeSpeech, getSpeech } from './lib.js';
 import {
   Home, Vocab, Grammar, GrammarTopic, Exams, ExamList, ExamRunner, Auth, ResetPassword, Info, Placement, StartRoute,
 } from './pages.jsx';
@@ -53,6 +53,10 @@ export default function App() {
   const level = getP('level', 'A2');
   const [user, setUser] = useState(null);
   const [ready, setReady] = useState(!supa); // wait for session check before deciding locked/unlocked
+  // Most "the audio is English" reports are a device without a Dutch voice: say so everywhere,
+  // not only inside the listening player, and point at the fix.
+  const sp = useSyncExternalStore(subscribeSpeech, getSpeech);
+  const voiceWarn = !sp.nl && typeof window !== 'undefined' && !!window.speechSynthesis && !getP('voiceWarnOff');
   const nav = useNavigate();
 
   useEffect(() => {
@@ -122,6 +126,15 @@ export default function App() {
             </Link>
           </div>
         </header>
+        {!locked && voiceWarn && (
+          <div className="voice-banner">
+            ⚠️ {lang === 'tr'
+              ? 'Bu cihazda Hollandaca ses paketi yok — kelimeler İngilizce aksanla okunur. '
+              : 'No Dutch voice on this device — words are read with an English accent. '}
+            <Link to="/support">{lang === 'tr' ? '1 dakikada düzelt →' : 'Fix it in 1 minute →'}</Link>
+            <button className="linklike" onClick={() => setP('voiceWarnOff', true)} title="✕">✕</button>
+          </div>
+        )}
         <main>
           {!ready ? null : locked ? (
             <Routes>
