@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { TURNSTILE_SITE_KEY } from './config.js';
 import {
   supa, speak, stopSpeak, pauseSpeak, resumeSpeak, subscribeSpeech, getSpeech,
-  getP, setP, MODULES, PASS_PCT, hasSTT, listenOnce,
+  getP, setP, MODULES, PASS_PCT, hasSTT, listenStart,
   LEVELS, getLevel, levelModules, examCount, examKey,
 } from './lib.js';
 import { useLang, useT, useUser } from './App.jsx';
@@ -590,11 +590,16 @@ function OpenRunner({ level, mod, n, qs }) {
   useEffect(() => stopSpeak, []);
   const q = qs[i];
 
+  const recH = useRef(null);
+  // first press starts recording, second press stops it; after feedback it records again
   async function record() {
+    if (rec) { recH.current?.stop(); return; }
     setRec(true);
     setFb(null);
+    setAns('');
     try {
-      const text = await listenOnce();
+      recH.current = listenStart();
+      const text = await recH.current.done;
       setAns(text);
       if (text) setFb(evalOpen(q, text));
     } catch {
@@ -671,9 +676,10 @@ function OpenRunner({ level, mod, n, qs }) {
         <div className="listen-box">
           {!sttFail ? (
             <>
-              <button className="btn big mic" onClick={record} disabled={rec}>
-                {rec ? '🎤 …' : '🎤 ' + t({ en: 'Speak your answer', tr: 'Cevabını söyle' })}
+              <button className={'btn big ' + (rec ? 'again' : 'mic')} onClick={record}>
+                {rec ? '⏹ ' + t({ en: 'Stop recording', tr: 'Kaydı durdur' }) : '🎤 ' + t({ en: fb ? 'Record again' : 'Speak your answer', tr: fb ? 'Tekrar kaydet' : 'Cevabını söyle' })}
               </button>
+              {rec && <p><small>🔴 {t({ en: 'Recording… say your whole answer, then press stop.', tr: 'Kayıt sürüyor… cevabının tamamını söyle, sonra durdur.' })}</small></p>}
               {ans && <div className="transcript">🗣 {ans}</div>}
               {ans === '' && fb === null && !rec && (
                 <p><small>{t({ en: 'Press the microphone and answer out loud in Dutch.', tr: 'Mikrofona bas ve Hollandaca sesli cevap ver.' })}</small></p>
@@ -707,9 +713,17 @@ function OpenRunner({ level, mod, n, qs }) {
           {!fb.self && !fb.ok && q.min && fb.words < q.min && (
             <p><small>{t({ en: 'You wrote ' + fb.words + ' word(s); at least ' + q.min + ' needed.', tr: fb.words + ' kelime yazdın; en az ' + q.min + ' gerekli.' })}</small></p>
           )}
+          {q.l && <p>📝 <i>{t({ en: 'The question was', tr: 'Soru şuydu' })}:</i> {q.l}</p>}
           {fb.hits && q.pts && (
             <ul className="chk">
               {q.pts.map((p, j) => <li key={j}>{fb.hits[j] ? '✅' : '❌'} {p.d}</li>)}
+            </ul>
+          )}
+          {speaking && !fb.self && (
+            <ul className="chk">
+              {!q.pts && <li>{fb.ok ? '✅' : '❌'} {t({ en: 'Task: answers the question', tr: 'Görev: soruya cevap veriyor' })}</li>}
+              <li>{fb.words >= 4 ? '✅' : '❌'} {t({ en: `Length: ${fb.words} words (aim for 4 or more)`, tr: `Uzunluk: ${fb.words} kelime (hedef 4+)` })}</li>
+              <li>{/\b(en|maar|want|omdat|dan|daarna|dus)\b/i.test(ans) ? '✅' : '💡'} {t({ en: 'Structure: links ideas with en, maar, want, omdat', tr: 'Yapı: en, maar, want, omdat ile bağlıyor' })}</li>
             </ul>
           )}
           <p>💡 <i>{t({ en: 'Example answer', tr: 'Örnek cevap' })}:</i> {q.model} <Speaker text={q.model} /></p>

@@ -322,6 +322,34 @@ export function listenOnce() {
   });
 }
 
+// Keep listening until the learner presses stop — one sentence is not an exam answer.
+// Returns { stop, done }: `done` resolves with everything heard, joined.
+export function listenStart() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) throw new Error('no-stt');
+  const r = new SR();
+  r.lang = 'nl-NL';
+  r.continuous = true;
+  r.interimResults = false;
+  r.maxAlternatives = 3;
+  const parts = [];
+  const done = new Promise((resolve, reject) => {
+    r.onresult = (e) => {
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        parts.push([...e.results[i]].map((a) => a.transcript).join(' | '));
+      }
+    };
+    r.onerror = (e) => {
+      if (e.error === 'no-speech' || e.error === 'aborted') resolve(parts.join(' '));
+      else reject(new Error(e.error));
+    };
+    r.onend = () => resolve(parts.join(' '));
+  });
+  r.start();
+  const cap = setTimeout(() => r.stop(), 45000); // ponytail: the real exam gives ~30 s per task
+  return { stop: () => { clearTimeout(cap); r.stop(); }, done: done.finally(() => clearTimeout(cap)) };
+}
+
 // ---------- helpers ----------
 export function shuffle(arr, rnd = Math.random) {
   const a = [...arr];
